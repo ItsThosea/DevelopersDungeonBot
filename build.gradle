@@ -1,0 +1,60 @@
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
+
+plugins {
+    id 'java-library'
+    id "io.github.goooler.shadow" version "8.1.7"
+}
+
+group = 'me.thosea'
+version = '1.0.0'
+description = 'DevelopersDungeon'
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+dependencies {
+    api('net.dv8tion:JDA:5.0.0-beta.24') {
+        // exclude audio library
+        exclude group: 'club.minnced', module: "opus-java"
+    }
+    api 'it.unimi.dsi:fastutil-core:8.5.13'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'me.thosea.developersdungeon.Main'
+    }
+}
+
+shadowJar {
+    minimize()
+    include '**'
+
+    exclude 'META-INF/**'
+    include 'META-INF/MANIFEST.MF'
+
+    // library only used for audio
+    exclude 'com/iwebpp/**'
+}
+
+java.toolchain {
+    languageVersion.set(JavaLanguageVersion.of(21))
+}
+
+tasks.build.finalizedBy tasks.shadowJar
+tasks.shadowJar.outputs.upToDateWhen { false }
+tasks.shadowJar.doLast {
+    var jarFile = jar.archiveFile.get().asFile
+    var shadowFile = new File(jarFile.parentFile, "$rootProject.name-$version-all.jar")
+
+    if(!shadowFile.exists()) {
+        println("Warning: non existent shadow jar " + shadowFile)
+        return
+    }
+
+    println("Overwriting $shadowFile onto $jarFile")
+    Files.move(shadowFile.toPath(), jarFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
+}
