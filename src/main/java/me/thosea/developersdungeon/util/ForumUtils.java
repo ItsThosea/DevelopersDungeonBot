@@ -20,7 +20,7 @@ public final class ForumUtils {
 			return;
 		}
 
-		channel.getHistoryFromBeginning(3).queue(list -> {
+		channel.getHistoryFromBeginning(5).queue(list -> {
 			for(Message msg : list.getRetrievedHistory()) {
 				if(msg.getAuthor().equals(Main.jda.getSelfUser())) {
 					handler.accept(msg);
