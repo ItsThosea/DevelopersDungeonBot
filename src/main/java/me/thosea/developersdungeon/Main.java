@@ -20,11 +20,36 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import okhttp3.OkHttpClient;
 
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Main {
-	private static final String TOKEN = "MTI1NDkzMzQ3Nzg1NDU0Mzk3Mg.GKDQbq.cjL63iNGVOT6PxXuPg-PquGYNCvSu_vqElyS6w";
+public final class Main {
+	private Main() {}
+
+	private static final String TOKEN;
+	public static final String VERSION;
+
+	static {
+		String filePath = "devdungeon.properties";
+
+		try {
+			ClassLoader loader = Thread.currentThread().getContextClassLoader();
+			Properties properties = new Properties();
+
+			try(InputStream stream = loader.getResourceAsStream(filePath)) {
+				properties.load(stream);
+			}
+
+			VERSION = properties.getProperty("version");
+			TOKEN = properties.getProperty("token");
+		} catch(Exception e) {
+			throw new IllegalStateException("Failed to read properties from " + filePath, e);
+		}
+
+		System.out.println("Running Developers Dungeon v" + VERSION);
+	}
 
 	public static JDA jda;
 	public static Guild guild;

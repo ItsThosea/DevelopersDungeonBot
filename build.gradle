@@ -23,6 +23,12 @@ dependencies {
     api 'it.unimi.dsi:fastutil-core:8.5.13'
 }
 
+processResources {
+    filesMatching("devdungeon.properties") {
+        expand(version: version, token: System.getenv("DEVDUNGEON_TOKEN"))
+    }
+}
+
 jar {
     manifest {
         attributes 'Main-Class': 'me.thosea.developersdungeon.Main'
@@ -35,6 +41,7 @@ shadowJar {
 
     exclude 'META-INF/**'
     include 'META-INF/MANIFEST.MF'
+    include 'META-INF/devdungeon.properties'
 
     // library only used for audio
     exclude 'com/iwebpp/**'
@@ -45,7 +52,10 @@ java.toolchain {
 }
 
 tasks.build.finalizedBy tasks.shadowJar
+
 tasks.shadowJar.outputs.upToDateWhen { false }
+tasks.processResources.outputs.upToDateWhen { false }
+
 tasks.shadowJar.doLast {
     var jarFile = jar.archiveFile.get().asFile
     var shadowFile = new File(jarFile.parentFile, "$rootProject.name-$version-all.jar")
