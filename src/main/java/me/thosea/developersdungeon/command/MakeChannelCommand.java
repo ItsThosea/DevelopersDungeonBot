@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.StandardGuildChannel;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -97,20 +98,23 @@ public class MakeChannelCommand implements CommandHandler {
 			text.pinMessageById(msg.getIdLong()).queue();
 		}
 
-		ForumUtils.getBotMessage(hook.getInteraction().getMessageChannel(), stateMsg -> {
-			if(stateMsg == null) return;
+		if(hook.getInteraction().getMessageChannel() instanceof ThreadChannel thread
+				&& thread.getOwnerIdLong() == member.getIdLong()) {
+			ForumUtils.getBotMessage(thread, stateMsg -> {
+				if(stateMsg == null) return;
 
-			String channels = ForumUtils.getPreviousChannels(stateMsg);
-			if(channels == null) {
-				channels = channel.getAsMention();
-			} else {
-				channels += ", " + channel.getAsMention();
-			}
+				String channels = ForumUtils.getPreviousChannels(stateMsg);
+				if(channels == null) {
+					channels = channel.getAsMention();
+				} else {
+					channels += ", " + channel.getAsMention();
+				}
 
-			stateMsg.editMessageEmbeds(
-					stateMsg.getEmbeds().getFirst(),
-					ForumUtils.makeChannelsEmbed(channels)).queue();
-		});
+				stateMsg.editMessageEmbeds(
+						stateMsg.getEmbeds().getFirst(),
+						ForumUtils.makeChannelsEmbed(channels)).queue();
+			});
+		}
 
 		if(split != null) {
 			String errorMessage = """
