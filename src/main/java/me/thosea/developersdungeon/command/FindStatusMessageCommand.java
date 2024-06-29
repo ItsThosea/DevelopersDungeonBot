@@ -9,10 +9,10 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 
 import java.util.List;
 
-public class FindStateMessageCommand implements CommandHandler {
+public class FindStatusMessageCommand implements CommandHandler {
 	@Override
 	public SlashCommandData makeCommandData() {
-		return Commands.slash("findstatusmessage", "Find the status/channel bot message of a commission request.");
+		return Commands.slash("findstatusmessage", "Find and display the bot status message of a commission request.");
 	}
 
 	@Override

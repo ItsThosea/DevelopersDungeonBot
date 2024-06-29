@@ -1,7 +1,7 @@
 package me.thosea.developersdungeon.event;
 
-import me.thosea.developersdungeon.command.MakePrivateChannelCommand;
-import me.thosea.developersdungeon.command.SetCommissionStateCommand;
+import me.thosea.developersdungeon.command.MakeChannelCommand;
+import me.thosea.developersdungeon.command.SetCommissionStatusCommand;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -19,7 +19,7 @@ public class ModalResponseListener extends ListenerAdapter {
 			String status = event.getValue("status").getAsString();
 
 			event.deferReply().setEphemeral(true).queue(hook -> {
-				SetCommissionStateCommand.handle(
+				SetCommissionStatusCommand.handle(
 						member,
 						event.getChannel().asThreadChannel(),
 						status,
@@ -29,7 +29,7 @@ public class ModalResponseListener extends ListenerAdapter {
 			String name = event.getValue("channel_name").getAsString();
 
 			event.deferReply().setEphemeral(true).queue(hook -> {
-				MakePrivateChannelCommand.handle(member, name, "text", null, hook);
+				MakeChannelCommand.handle(member, name, "text", null, hook);
 			});
 		}
 	}

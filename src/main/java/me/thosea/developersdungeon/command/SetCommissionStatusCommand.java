@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class SetCommissionStateCommand implements CommandHandler {
+public class SetCommissionStatusCommand implements CommandHandler {
 	@Override
 	public SlashCommandData makeCommandData() {
 		return Commands.slash(

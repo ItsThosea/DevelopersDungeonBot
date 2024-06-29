@@ -21,7 +21,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
-public class MakePrivateChannelCommand implements CommandHandler {
+public class MakeChannelCommand implements CommandHandler {
 	@Override
 	public SlashCommandData makeCommandData() {
 		return Commands.slash("makechannel", "Make a private channel that you have full access to.")

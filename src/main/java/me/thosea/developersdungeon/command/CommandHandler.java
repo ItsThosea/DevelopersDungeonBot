@@ -15,11 +15,11 @@ public interface CommandHandler {
 	static List<SlashCommandData> buildCommands() {
 		List<CommandHandler> handlers = List.of(
 				new EchoCommand(),
-				new SetCommissionStateCommand(),
+				new SetCommissionStatusCommand(),
 				new DebugCommand(),
 				new CommissionChannelsCommand(),
-				new FindStateMessageCommand(),
-				new MakePrivateChannelCommand(),
+				new FindStatusMessageCommand(),
+				new MakeChannelCommand(),
 				new DeleteChannelCommand(),
 				new RenameChannelCommand(),
 				new TeamCommand()
