@@ -25,6 +25,7 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
@@ -104,45 +105,46 @@ public class TeamCommand implements CommandHandler {
 		}
 
 		event.deferReply().queue(hook -> {
-			var request = Main.guild
+			var baseRequest = Main.guild
 					.createRole()
-					.setName(name + " (Team)")
+					.setName(name)
 					.setColor(color)
-					.setPermissions();
+					.setPermissions(Set.of());
 
-			request.queue(baseRole -> {
-				Main.guild.createRole()
+			baseRequest.queue(baseRole -> {
+				var ownerRequest = Main.guild.createRole()
 						.setPermissions()
-						.setName(name + " (Team Owner)")
-						.setColor(color)
-						.queue(ownerRole -> {
-							Main.guild.modifyRolePositions()
-									.selectPosition(baseRole)
-									.moveBelow(Main.teamRoleSandwichTop)
-									.selectPosition(ownerRole)
-									.moveBelow(Main.teamRoleSandwichTop)
-									.queue();
+						.setName(name + " (Owner)")
+						.setColor(color);
 
-							if(TeamRoleUtils.hasTeamRole(member)) {
-								hook.editOriginal("You just got a team role!! Cheater!").queue();
-								baseRole.delete().queue();
-								ownerRole.delete().queue();
-								return;
-							}
+				ownerRequest.queue(ownerRole -> {
+					Main.guild.modifyRolePositions()
+							.selectPosition(baseRole)
+							.moveBelow(Main.teamRoleSandwichTop)
+							.selectPosition(ownerRole)
+							.moveBelow(Main.teamRoleSandwichTop)
+							.queue();
 
-							Main.guild.addRoleToMember(member, baseRole).queue();
-							Main.guild.addRoleToMember(member, ownerRole).queue();
+					if(TeamRoleUtils.hasTeamRole(member)) {
+						hook.editOriginal("You just got a team role!! Cheater!").queue();
+						baseRole.delete().queue();
+						ownerRole.delete().queue();
+						return;
+					}
 
-							String roles = baseRole.getAsMention() + " & " + ownerRole.getAsMention();
+					Main.guild.addRoleToMember(member, baseRole).queue();
+					Main.guild.addRoleToMember(member, ownerRole).queue();
 
-							hook.editOriginal("Your team roles have been made: " + roles +
-											"\nInvite people with /team invite, " +
-											"or change the color with /team setcolor")
-									.setAllowedMentions(List.of())
-									.queue();
+					String roles = baseRole.getAsMention() + " & " + ownerRole.getAsMention();
 
-							Utils.logMinor("%s made team %s: %s", member, name, roles);
-						});
+					hook.editOriginal("Your team roles have been made: " + roles +
+									"\nInvite people with /team invite, " +
+									"or change the color with /team setcolor")
+							.setAllowedMentions(List.of())
+							.queue();
+
+					Utils.logMinor("%s made team %s: %s", member, name, roles);
+				});
 			});
 		});
 	}
@@ -198,7 +200,7 @@ public class TeamCommand implements CommandHandler {
 		Utils.logMinor("%s renamed their team %s from %s to %s",
 				member,
 				rolePair.baseRole(),
-				TeamRoleUtils.getName(rolePair.baseRole()),
+				rolePair.baseRole().getName(),
 				name);
 
 		rolePair.baseRole().getManager()
@@ -290,7 +292,7 @@ public class TeamCommand implements CommandHandler {
 	private static void handleInfo(InteractionHook hook, Role baseRole, Role ownerRole) {
 		EmbedBuilder embed = new EmbedBuilder();
 		embed.setColor(baseRole.getColorRaw());
-		embed.setTitle("Team Info - " + TeamRoleUtils.getName(baseRole));
+		embed.setTitle("Team Info - " + baseRole.getName());
 
 		Color color = baseRole.getColor();
 		String colorStr = color == null

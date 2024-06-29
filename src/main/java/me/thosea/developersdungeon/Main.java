@@ -24,7 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
-	private static final String TOKEN = "***REMOVED***";
+	private static final String TOKEN = "MTI1NDkzMzQ3Nzg1NDU0Mzk3Mg.GKDQbq.cjL63iNGVOT6PxXuPg-PquGYNCvSu_vqElyS6w";
 
 	public static JDA jda;
 	public static Guild guild;

@@ -19,7 +19,7 @@ public class LeaveListener extends ListenerAdapter {
 
 		Utils.logMinor("Team %s (%s) was deleted because the owner, %s, left the server.",
 				pair.baseRole(),
-				TeamRoleUtils.getName(pair.baseRole()),
+				pair.baseRole().getName(),
 				event.getMember());
 	}
 }

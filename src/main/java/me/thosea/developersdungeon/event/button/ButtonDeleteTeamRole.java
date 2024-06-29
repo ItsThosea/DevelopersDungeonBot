@@ -28,14 +28,10 @@ public class ButtonDeleteTeamRole implements ButtonHandler {
 
 		baseRole.delete().queue();
 		ownerRole.delete().queue();
-		event.reply(member.getAsMention() + " - "
-						+ "Deleted your team " + TeamRoleUtils.getName(baseRole) + ".")
+		event.reply(member.getAsMention() + " deleted their team " + baseRole.getName() + ".")
 				.setAllowedMentions(List.of())
 				.queue();
 
-		Utils.logMinor("%s deleted their team %s (%s)",
-				member,
-				baseRole,
-				TeamRoleUtils.getName(baseRole));
+		Utils.logMinor("%s deleted their team %s (%s)", member, baseRole, baseRole.getName());
 	}
 }

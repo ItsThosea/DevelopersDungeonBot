@@ -11,8 +11,7 @@ public final class TeamRoleUtils {
 	private TeamRoleUtils() {}
 
 	public static boolean isTeamRole(Role role) {
-		return role.compareTo(Main.teamRoleSandwichBottom) > 0
-				&& role.compareTo(Main.teamRoleSandwichTop) < 0;
+		return role.compareTo(Main.teamRoleSandwichBottom) > 0 && role.compareTo(Main.teamRoleSandwichTop) < 0;
 	}
 
 	public static boolean hasTeamRole(Member member) {
@@ -27,22 +26,25 @@ public final class TeamRoleUtils {
 
 	public static boolean isValidName(@Nullable String name) {
 		if(name == null) return false;
-		if(name.length() + " (Team Owner)".length() > 100) {
+		if(name.length() + " (Owner)".length() > 100) {
 			return false;
 		} else {
 			name = name.toLowerCase(Locale.ENGLISH);
-			return !name.contains("team owner") && !name.contains("(team)");
+			return !name.contains("owner");
 		}
 	}
 
 	public static boolean isTeamOwnerRole(Role role) {
-		return role.getName().contains("(Team Owner)");
+		return role.getName().contains("(Owner)");
 	}
 
 	public static Role findBaseRole(Role owner) {
 		if(!isTeamOwnerRole(owner)) return owner;
 
-		String name = getName(owner) + " (Team)";
+		String name = owner.getName().substring(
+				0,
+				owner.getName().length() - " (Owner)".length());
+
 		for(Role role : Main.guild.getRoles()) {
 			if(!isTeamRole(role)) continue;
 			if(role.getName().equals(name)) {
@@ -53,10 +55,10 @@ public final class TeamRoleUtils {
 		return null;
 	}
 
-	public static Role findOwnerRole(Role owner) {
-		if(isTeamOwnerRole(owner)) return owner;
+	public static Role findOwnerRole(Role base) {
+		if(isTeamOwnerRole(base)) return base;
 
-		String name = getName(owner) + " (Team Owner)";
+		String name = base.getName() + " (Owner)";
 		for(Role role : Main.guild.getRoles()) {
 			if(!isTeamRole(role)) continue;
 			if(role.getName().equals(name)) {
@@ -82,12 +84,6 @@ public final class TeamRoleUtils {
 		}
 
 		return new TeamRolePair(ownerRole, baseRole);
-	}
-
-	public static String getName(Role role) {
-		int subtract = (role.getName().contains("(Team)") ? " (Team)" : " (Team Owner)").length();
-
-		return role.getName().substring(0, role.getName().length() - subtract);
 	}
 
 	public record TeamRolePair(Role ownerRole, Role baseRole) {
