@@ -1,18 +1,35 @@
 package me.thosea.developersdungeon.util;
 
 import me.thosea.developersdungeon.Main;
+import me.thosea.developersdungeon.event.button.ButtonHandler;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.awt.Color;
+import java.util.List;
 import java.util.function.Consumer;
 
 public final class ForumUtils {
 	private ForumUtils() {}
+
+	public static void sendBotMessage(ThreadChannel channel) {
+		channel.sendMessageEmbeds(
+						ForumUtils.makeStatusEmbed("Looking for somebody!"),
+						ForumUtils.makeChannelsEmbed(null))
+				.setAllowedMentions(List.of())
+				.setMessageReference(channel.getIdLong())
+				.setActionRow(
+						Button.primary(
+								ButtonHandler.ID_MAKE_CHANNEL + "-" + channel.getOwnerId(),
+								"Create Private Channel"),
+						Button.success(ButtonHandler.ID_EDIT_STATUS, "Change Status"))
+				.queue();
+	}
 
 	public static void getBotMessage(MessageChannel channel, Consumer<Message> handler) {
 		if(!isCommissionRequest(channel)) {
