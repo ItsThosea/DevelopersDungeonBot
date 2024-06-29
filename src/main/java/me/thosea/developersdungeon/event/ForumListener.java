@@ -22,7 +22,7 @@ public class ForumListener extends ListenerAdapter {
 		if(parentId != 1237699021804671039L) return;
 
 		Main.guild.retrieveMemberById(channel.getOwnerIdLong()).queue(member -> {
-			Utils.logMinor("%s made commission request %s > %s", member, channel.getName(), channel);
+			Utils.logChannel("%s made commission request %s > %s", member, channel.getName(), channel);
 			channel.sendMessageEmbeds(ForumUtils.makeStatusEmbed("Looking for somebody!"), ForumUtils.makeChannelsEmbed(null))
 					.setAllowedMentions(List.of())
 					.setMessageReference(channel.getIdLong())

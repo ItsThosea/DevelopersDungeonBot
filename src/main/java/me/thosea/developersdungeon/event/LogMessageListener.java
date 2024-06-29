@@ -26,11 +26,11 @@ public class LogMessageListener extends ListenerAdapter {
 		if(!ForumUtils.isCommissionRequest(channel) && !PChannelUtils.isPrivateChannel(channel))
 			return;
 
-		Utils.logMinor("%s: %s > %s",
+		Utils.logChannel("%s: %s > %s (%s)",
 				event.getMember(),
-				event.getMessage().
-						getContentRaw(),
-				event.getMessage());
+				event.getMessage().getContentRaw(),
+				event.getMessage(),
+				channel);
 	}
 
 	private String getPingResponse(String content) {
