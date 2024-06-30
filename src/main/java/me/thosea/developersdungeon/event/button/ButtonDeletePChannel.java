@@ -17,10 +17,7 @@ public class ButtonDeletePChannel implements ButtonHandler {
 			return;
 		}
 
-		Utils.logChannel("%s deleted private channel %s (%s)",
-				member,
-				event.getChannel(),
-				event.getChannel().getName());
+		Utils.logChannel("%s deleted private channel %s", member, event.getChannel());
 		event.getChannel().delete().queue();
 		// No need to respond to the event.
 	}

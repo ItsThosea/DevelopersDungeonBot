@@ -37,7 +37,7 @@ public class ForumListener extends ListenerAdapter {
 		ThreadChannel channel = event.getChannel().asThreadChannel();
 
 		Main.guild.retrieveMemberById(channel.getOwnerIdLong()).queue(member -> {
-			Utils.logChannel("%s made commission request %s > %s", member, channel.getName(), channel);
+			Utils.logChannel("%s made commission request %s", member, channel);
 			ForumUtils.sendBotMessage(channel);
 		});
 	}

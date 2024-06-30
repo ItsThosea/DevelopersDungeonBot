@@ -84,15 +84,14 @@ public class MakeChannelCommand implements CommandHandler {
 							"Commands"
 					))
 					.queue(msg -> {
-						handleNewChannel(member, hook, channel, msg, type, finalChannelName, split);
+						handleNewChannel(member, hook, channel, msg, type, split);
 					});
 		});
 	}
 
 	private static void handleNewChannel(Member member, InteractionHook hook,
 	                                     StandardGuildChannel channel,
-	                                     Message msg,
-	                                     String type, String channelName,
+	                                     Message msg, String type,
 	                                     String[] split) {
 		if(channel instanceof TextChannel text) {
 			text.pinMessageById(msg.getIdLong()).queue();
@@ -151,6 +150,6 @@ public class MakeChannelCommand implements CommandHandler {
 				.flatMap(i__ -> hook.editOriginal("Made your " + type + " channel > " + channel.getAsMention()))
 				.queue();
 
-		Utils.logChannel("%s made %s channel %s > %s", member, type, channelName, channel);
+		Utils.logChannel("%s made %s channel %s", member, type, channel);
 	}
 }
