@@ -109,6 +109,7 @@ public class TeamCommand implements CommandHandler {
 					.createRole()
 					.setName(name)
 					.setColor(color)
+					.setMentionable(true)
 					.setPermissions(Set.of());
 
 			baseRequest.queue(baseRole -> {
