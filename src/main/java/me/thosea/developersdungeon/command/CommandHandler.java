@@ -23,7 +23,9 @@ public interface CommandHandler {
 				new DeleteChannelCommand(),
 				new RenameChannelCommand(),
 				new TeamCommand(),
-				new AboutCommand()
+				new AboutCommand(),
+				new VerifyCommand(),
+				new UnverifyCommand()
 		);
 		List<SlashCommandData> result = new ArrayList<>(handlers.size());
 

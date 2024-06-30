@@ -54,6 +54,7 @@ public final class Main {
 	public static JDA jda;
 	public static Guild guild;
 
+	public static TextChannel generalChannel;
 	public static TextChannel minorLogChannel;
 	public static TextChannel majorLogChannel;
 	public static TextChannel channelLogChannel;
@@ -100,6 +101,9 @@ public final class Main {
 		System.out.println("Found Developers Dungeon server, initializing");
 		Main.guild = guild;
 
+		if((generalChannel = guild.getTextChannelById(1254606017250201612L)) == null) {
+			oops("No general channel found.");
+		}
 		if((minorLogChannel = guild.getTextChannelById(1254944964891115520L)) == null) {
 			oops("No minor log channel found.");
 		}
