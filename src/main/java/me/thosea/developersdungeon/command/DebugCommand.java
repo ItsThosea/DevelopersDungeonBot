@@ -44,9 +44,17 @@ public class DebugCommand implements CommandHandler {
 				handleOpcode2(hook, args);
 			});
 		} else if(opcode == 3) {
-			handleOpcode4(event);
+			handleOpcode3(event);
 		} else {
-			event.reply("Invalid opcode").setEphemeral(true).queue();
+			event.reply("""
+							Invalid opcodes. Opcodes:
+							0: Resend state message
+							1: Delete commission request forum post
+							2: Give role (user, role)
+							3: List roles / isTeamRole
+							""")
+					.setEphemeral(true)
+					.queue();
 		}
 	}
 
@@ -86,10 +94,17 @@ public class DebugCommand implements CommandHandler {
 		long targetId;
 		long roleId;
 		try {
-			String targetMention = args[0].substring(2, args[0].length() - 1);
-			String targetRole = args[1].substring(3, args[1].length() - 1);
+			String target = args[0];
+			if(target.startsWith("<@")) {
+				target = target.substring(2, target.length() - 1);
+			}
 
-			targetId = Long.parseLong(targetMention);
+			String targetRole = args[1];
+			if(targetRole.startsWith("<@&")) {
+				targetRole = targetRole.substring(3, targetRole.length() - 1);
+			}
+
+			targetId = Long.parseLong(target);
 			roleId = Long.parseLong(targetRole);
 		} catch(Exception ignored) {
 			hook.editOriginal("Invalid args").queue();
@@ -110,7 +125,7 @@ public class DebugCommand implements CommandHandler {
 		}, err -> hook.editOriginal("Mo person found").queue());
 	}
 
-	private static void handleOpcode4(SlashCommandInteraction event) {
+	private static void handleOpcode3(SlashCommandInteraction event) {
 		StringBuilder builder = new StringBuilder("Roles:");
 		for(Role role : Main.guild.getRoles()) {
 			builder.append('\n');
