@@ -75,8 +75,6 @@ public class MakeChannelCommand implements CommandHandler {
 				: Main.guild.createVoiceChannel(channelName, Main.guild.getCategoryById(1248544270579924993L));
 
 		request.reason(member.getAsMention());
-
-		final String finalChannelName = channelName;
 		request.queue(channel -> {
 			channel.sendMessageEmbeds(PChannelUtils.makeInitEmbed(member.getAsMention()))
 					.setActionRow(Button.secondary(
