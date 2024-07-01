@@ -25,7 +25,7 @@ public final class PChannelUtils {
 
 	public static boolean isPrivateChannel(MessageChannel channel) {
 		return channel instanceof ICategorizableChannel categorizable //?????
-				&& categorizable.getParentCategoryIdLong() == 1248544270579924993L;
+				&& categorizable.getParentCategoryIdLong() == Constants.ChannelCategories.PRIVATE_CHANNEL_CATEGORY;
 	}
 
 	public static void getOwner(MessageChannel channel, Consumer<String> handler) {

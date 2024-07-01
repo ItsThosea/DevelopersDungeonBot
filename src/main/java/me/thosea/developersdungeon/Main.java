@@ -9,6 +9,7 @@ import me.thosea.developersdungeon.event.LogMessageListener;
 import me.thosea.developersdungeon.event.ModalResponseListener;
 import me.thosea.developersdungeon.event.PChannelListener;
 import me.thosea.developersdungeon.event.SlashCommandListener;
+import me.thosea.developersdungeon.util.Constants;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -91,7 +92,7 @@ public final class Main {
 
 	private static void guildReady(GuildReadyEvent event) {
 		Guild guild = event.getGuild();
-		if(guild.getIdLong() != 989441509193551874L) {
+		if(guild.getIdLong() != Constants.DEVELOPER_DUNGEONS_SERVER_ID) {
 			guild.leave().queue();
 			return;
 		}
@@ -101,23 +102,23 @@ public final class Main {
 		System.out.println("Found Developers Dungeon server, initializing");
 		Main.guild = guild;
 
-		if((generalChannel = guild.getTextChannelById(1254606017250201612L)) == null) {
+		if((generalChannel = guild.getTextChannelById(Constants.Channels.GENERAL_CHANNEL)) == null) {
 			oops("No general channel found.");
 		}
-		if((minorLogChannel = guild.getTextChannelById(1254944964891115520L)) == null) {
+		if((minorLogChannel = guild.getTextChannelById(Constants.Channels.MINOR_LOG_CHANNEL)) == null) {
 			oops("No minor log channel found.");
 		}
-		if((majorLogChannel = guild.getTextChannelById(1237689893971562498L)) == null) {
+		if((majorLogChannel = guild.getTextChannelById(Constants.Channels.MAJOR_LOG_CHANNEL)) == null) {
 			oops("No major log channel found.");
 		}
-		if((channelLogChannel = guild.getTextChannelById(1256002915647098890L)) == null) {
+		if((channelLogChannel = guild.getTextChannelById(Constants.Channels.CHANNEL_LOG_CHANNEL)) == null) {
 			oops("No channel log channel found.");
 		}
 
-		if((teamRoleSandwichTop = guild.getRoleById(1256007545152077884L)) == null) {
+		if((teamRoleSandwichTop = guild.getRoleById(Constants.Roles.TEAM_ROLE_SANDWICH_BOTTOM)) == null) {
 			oops("No team role sandwich top");
 		}
-		if((teamRoleSandwichBottom = guild.getRoleById(1256007657144188968L)) == null) {
+		if((teamRoleSandwichBottom = guild.getRoleById(Constants.Roles.TEAM_ROLE_SANDWICH_BOTTOM)) == null) {
 			oops("No team role sandwich bottom");
 		}
 	}

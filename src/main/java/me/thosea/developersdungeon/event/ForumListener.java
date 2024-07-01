@@ -3,6 +3,7 @@ package me.thosea.developersdungeon.event;
 import it.unimi.dsi.fastutil.longs.LongOpenHashBigSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import me.thosea.developersdungeon.Main;
+import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.ForumUtils;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
@@ -20,7 +21,7 @@ public class ForumListener extends ListenerAdapter {
 		if(!(event.getChannel() instanceof ThreadChannel channel)) return;
 
 		long parentId = channel.getParentChannel().getIdLong();
-		if(parentId != 1237699021804671039L) return;
+		if(parentId != Constants.Channels.COMMISSIONS_CHANNEL) return;
 
 		WAITING_FOR_MESSAGE.add(channel.getIdLong());
 		Utils.doLater(TimeUnit.SECONDS, 30, () -> {

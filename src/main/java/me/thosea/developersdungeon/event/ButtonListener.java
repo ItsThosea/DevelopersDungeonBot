@@ -2,6 +2,7 @@ package me.thosea.developersdungeon.event;
 
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.event.button.ButtonHandler;
+import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -58,7 +59,7 @@ public class ButtonListener extends ListenerAdapter {
 
 			@Override
 			public void handle(Member member, ButtonInteractionEvent event, String[] args) {
-				if(member.getIdLong() != 959062384419410011L) {
+				if(!Constants.BOT_ADMINS.contains(member.getIdLong())) {
 					event.reply("You aren't Thosea!").setEphemeral(true).queue();
 					return;
 				}
