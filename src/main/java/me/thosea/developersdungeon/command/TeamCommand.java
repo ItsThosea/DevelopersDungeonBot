@@ -53,7 +53,7 @@ public class TeamCommand implements CommandHandler {
 				.addSubcommands(new SubcommandData("info", "Display info about your team or the specified team.")
 						.addOption(OptionType.MENTIONABLE, "target", "Target team or user. Leave blank to check your own team."))
 				.addSubcommands(new SubcommandData("kick", "Kick somebody from the team")
-						.addOption(OptionType.USER, "target", "Who to kick.", true));
+						.addOption(OptionType.USER, "target", "Who to kick.", true)));
 	}
 
 	@Override
