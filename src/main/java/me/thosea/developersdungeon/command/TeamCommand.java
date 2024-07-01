@@ -108,9 +108,10 @@ public class TeamCommand implements CommandHandler {
 					.queue();
 			return;
 		}
+		
 		Role baseRole = TeamRoleUtils.getTeamRoles(member).baseRole();
 		Role ownerRole = TeamRoleUtils.getTeamRoles(member).ownerRole();
-		Boolean mentionable = event.getOption("value", false, OptionMapping::getAsBoolean);
+		boolean mentionable = event.getOption("value", false, OptionMapping::getAsBoolean);
 		event.deferReply().queue(hook -> {
 			baseRole.getManager().setMentionable(mentionable).queue();
 			ownerRole.getManager().setMentionable(mentionable).queue();
