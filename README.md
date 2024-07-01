@@ -5,7 +5,7 @@ A Discord bot designed for the Developers Dungeon Discord server.
 ## Commands
 Here's a list of commands that are used.
 
-- About:
+- About: Sends info about the bot.
 - CommissionChannels: A command that manipulates the channels displayed in the bot's status message, at the beginning of a commission request.
 - Debug: A command only runnable by Thosea, for his debug actions.
 - DeleteChannel: Deletes a private channel made by the bot.
