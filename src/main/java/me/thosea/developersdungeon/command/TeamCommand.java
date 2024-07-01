@@ -1,5 +1,6 @@
 package me.thosea.developersdungeon.command;
 
+import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import me.thosea.developersdungeon.Main;
@@ -22,13 +23,16 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class TeamCommand implements CommandHandler {
 	@Override
@@ -50,7 +54,9 @@ public class TeamCommand implements CommandHandler {
 				.addSubcommands(new SubcommandData("info", "Display info about your team or the specified team.")
 						.addOption(OptionType.MENTIONABLE, "target", "Target team or user. Leave blank to check your own team."))
 				.addSubcommands(new SubcommandData("kick", "Kick somebody from the team")
-						.addOption(OptionType.USER, "target", "Who to kick.", true));
+						.addOption(OptionType.USER, "target", "Who to kick.", true))
+				.addSubcommands(new SubcommandData("list", "What teams are on this server?"))
+				.addSubcommands(new SubcommandData("listids", "Same as /team list, but with role IDs."));
 	}
 
 	@Override
@@ -76,6 +82,9 @@ public class TeamCommand implements CommandHandler {
 					ButtonHandler.ID_TAKE_TEAM_OWNERSHIP, true);
 			case "info" -> handleInfo(member, event);
 			case "kick" -> handleKick(member, event);
+			case "list", "listids" -> event.deferReply().queue(hook -> {
+				handleList(hook, event.getSubcommandName().equals("listids"));
+			});
 			default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
 		}
 	}
@@ -227,7 +236,7 @@ public class TeamCommand implements CommandHandler {
 		rolePair.baseRole().getManager().setColor(color).queue();
 		rolePair.ownerRole().getManager().setColor(color).queue();
 
-		colorStr = String.format("(%s,%s,%s)", color.getRed(), color.getGreen(), color.getBlue());
+		colorStr = Utils.colorToString(color);
 
 		event.reply("Changed your team color to " + colorStr).queue();
 		Utils.logMinor("%s changed team color of %s to %s", member, rolePair.baseRole(), colorStr);
@@ -298,7 +307,7 @@ public class TeamCommand implements CommandHandler {
 		Color color = baseRole.getColor();
 		String colorStr = color == null
 				? "None"
-				: String.format("(%s,%s,%s)", color.getRed(), color.getGreen(), color.getBlue());
+				: Utils.colorToString(color);
 
 		embed.appendDescription("Color: " + colorStr);
 		embed.appendDescription("\nBase Role: " + baseRole.getAsMention());
@@ -374,6 +383,72 @@ public class TeamCommand implements CommandHandler {
 				.queue();
 
 		Utils.logMinor("%s kicked %s from team %s", member, target, pair.baseRole());
+	}
+
+	private void handleList(InteractionHook hook, boolean showId) {
+		EmbedBuilder builder = new EmbedBuilder();
+		builder.appendDescription("Team Roles in Developers Dungeon: ");
+		List<Pair<Role, Consumer<Member>>> toSearch = new ArrayList<>();
+
+		int roles = 0;
+		int avgRed = 0;
+		int avgGreen = 0;
+		int avgBlue = 0;
+
+		for(Role role : Main.guild.getRoles()) {
+			if(!TeamRoleUtils.isTeamRole(role)) continue;
+			if(TeamRoleUtils.isTeamOwnerRole(role)) continue;
+
+			Role ownerRole = TeamRoleUtils.findOwnerRole(role);
+			if(ownerRole == null) continue;
+
+			if(role.getColor() != null) {
+				roles++;
+				avgRed += role.getColor().getRed();
+				avgGreen += role.getColor().getGreen();
+				avgBlue += role.getColor().getBlue();
+			}
+
+			toSearch.add(Pair.of(ownerRole, member -> {
+				builder.appendDescription("\n" + role.getAsMention());
+				if(showId) {
+					builder.appendDescription(" (" + role.getId() + ")");
+				}
+
+				String owner = member == null ? "???" : member.getAsMention();
+				builder.appendDescription(" owned by " + owner);
+			}));
+		}
+
+		if(toSearch.isEmpty()) {
+			hook.editOriginal("There are no team roles empty.").queue();
+			return;
+		}
+
+		Color color = new Color(avgRed / roles, avgGreen / roles, avgBlue / roles);
+		builder.setColor(color);
+		builder.appendDescription("\nAverage Color: " + Utils.colorToString(color));
+
+		AtomicInteger done = new AtomicInteger();
+		for(Pair<Role, Consumer<Member>> pair : toSearch) {
+			Main.guild.findMembersWithRoles(pair.first())
+					.onSuccess(list -> {
+						int next = done.incrementAndGet();
+						if(next == 0) {
+							return; // -1
+						} else {
+							pair.second().accept(list.size() != 1 ? null : list.getFirst());
+							if(next != toSearch.size()) return; // waiting on other requests
+						}
+
+						hook.editOriginalEmbeds(builder.build()).queue();
+					})
+					.onError(err -> {
+						hook.editOriginal("Error: " + err).queue();
+						System.out.println("Error while getting team members ");
+						err.printStackTrace();
+					});
+		}
 	}
 
 	static final Map<Long, LongSet> requestCooldowns = new HashMap<>();

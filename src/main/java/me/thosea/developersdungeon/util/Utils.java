@@ -121,6 +121,10 @@ public final class Utils {
 		}
 	}
 
+	public static String colorToString(Color color) {
+		return "(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ")";
+	}
+
 	public static String splitUserAndRoleMentions(String string) {
 		return splitMentions(string, USER_PATTERN);
 	}
