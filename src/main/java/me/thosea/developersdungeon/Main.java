@@ -115,7 +115,7 @@ public final class Main {
 			oops("No channel log channel found.");
 		}
 
-		if((teamRoleSandwichTop = guild.getRoleById(Constants.Roles.TEAM_ROLE_SANDWICH_BOTTOM)) == null) {
+		if((teamRoleSandwichTop = guild.getRoleById(Constants.Roles.TEAM_ROLE_SANDWICH_TOP)) == null) {
 			oops("No team role sandwich top");
 		}
 		if((teamRoleSandwichBottom = guild.getRoleById(Constants.Roles.TEAM_ROLE_SANDWICH_BOTTOM)) == null) {
