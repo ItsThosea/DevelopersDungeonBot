@@ -96,12 +96,12 @@ public class TeamCommand implements CommandHandler {
 
 	private void handleSettings(Member member, SlashCommandInteraction event) {
 		switch (event.getSubcommandName()) {
-			case "mentionable" -> handlePingable(member, event);
+			case "mentionable" -> handleMentionable(member, event);
 			case null, default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
 		}
 	}
 
-	private void handlePingable(Member member, SlashCommandInteraction event) {
+	private void handleMentionable(Member member, SlashCommandInteraction event) {
 		if (TeamRoleUtils.getTeamRoles(member).eitherNull()) {
 			event.reply("You aren't an owner of a team.")
 					.setEphemeral(true)
