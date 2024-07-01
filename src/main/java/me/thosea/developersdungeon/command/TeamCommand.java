@@ -21,7 +21,6 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
 import java.util.HashMap;
@@ -111,7 +110,7 @@ public class TeamCommand implements CommandHandler {
 		}
 		Role baseRole = TeamRoleUtils.getTeamRoles(member).baseRole();
 		Role ownerRole = TeamRoleUtils.getTeamRoles(member).ownerRole();
-		@NotNull Boolean mentionable = event.getOption("value", false, OptionMapping::getAsBoolean);
+		Boolean mentionable = event.getOption("value", false, OptionMapping::getAsBoolean);
 		event.deferReply().queue(hook -> {
 			baseRole.getManager().setMentionable(mentionable).queue();
 			ownerRole.getManager().setMentionable(mentionable).queue();
