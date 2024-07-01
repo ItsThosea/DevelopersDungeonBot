@@ -19,7 +19,9 @@ import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.Color;
 import java.util.HashMap;
@@ -34,6 +36,8 @@ public class TeamCommand implements CommandHandler {
 	@Override
 	public SlashCommandData makeCommandData() {
 		return Commands.slash("team", "Make or break (or even modify) a team role and its color.")
+				.addSubcommandGroups(new SubcommandGroupData("settings", "Your team's settings.")
+						.addSubcommands(new SubcommandData("mentionable", "Whether your team can be mentioned.").addOption(OptionType.BOOLEAN, "value", "Whether your team can be pinged."))
 				.addSubcommands(new SubcommandData("create", "Make a new team")
 						.addOption(OptionType.STRING, "name", "Role Name (you can change this later)", true)
 						.addOption(OptionType.STRING, "color", "Color (can be changed later, R,G,B or \"random\")"))
@@ -61,6 +65,17 @@ public class TeamCommand implements CommandHandler {
 					.queue();
 			return;
 		}
+		// goto doesn't exist, it can't hurt you. goto:
+		groups:
+		{
+			switch (event.getSubcommandGroup()) {
+				case "settings" -> handleSettings(member, event);
+				case null, default -> {
+					break groups;
+				}
+			}
+			return;
+		}
 
 		switch(event.getSubcommandName()) {
 			case "create" -> handleCreate(member, event);
@@ -76,8 +91,32 @@ public class TeamCommand implements CommandHandler {
 					ButtonHandler.ID_TAKE_TEAM_OWNERSHIP, true);
 			case "info" -> handleInfo(member, event);
 			case "kick" -> handleKick(member, event);
-			default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
+			case null, default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
 		}
+	}
+
+	private void handleSettings(Member member, SlashCommandInteraction event) {
+		switch (event.getSubcommandName()) {
+			case "mentionable" -> handlePingable(member, event);
+			case null, default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
+		}
+	}
+
+	private void handlePingable(Member member, SlashCommandInteraction event) {
+		if (TeamRoleUtils.getTeamRoles(member).eitherNull()) {
+			event.reply("You aren't an owner of a team.")
+					.setEphemeral(true)
+					.queue();
+			return;
+		}
+		Role baseRole = TeamRoleUtils.getTeamRoles(member).baseRole();
+		Role ownerRole = TeamRoleUtils.getTeamRoles(member).ownerRole();
+		@NotNull Boolean mentionable = event.getOption("value", false, OptionMapping::getAsBoolean);
+		event.deferReply().queue(hook -> {
+			baseRole.getManager().setMentionable(mentionable).queue();
+			ownerRole.getManager().setMentionable(mentionable).queue();
+			hook.editOriginal("Your team is now " + (mentionable ? "" : "not ") + "mentionable").queue();
+		});
 	}
 
 	// create mod reference??
