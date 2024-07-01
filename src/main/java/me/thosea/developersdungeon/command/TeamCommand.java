@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.event.button.ButtonHandler;
+import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.TeamRoleUtils;
 import me.thosea.developersdungeon.util.TeamRoleUtils.TeamRolePair;
 import me.thosea.developersdungeon.util.Utils;
@@ -283,7 +284,7 @@ public class TeamCommand implements CommandHandler {
 		final Role baseRole = base;
 		final Role ownerRole = owner;
 		event.deferReply()
-				.setEphemeral(event.getChannel().getIdLong() != 1254942520920506369L)
+				.setEphemeral(event.getChannel().getIdLong() != Constants.Channels.BOTS_CHANNEL)
 				.queue(hook -> {
 					handleInfo(hook, baseRole, ownerRole);
 				});
