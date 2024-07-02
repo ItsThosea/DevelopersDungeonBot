@@ -1,6 +1,7 @@
 package me.thosea.developersdungeon;
 
 import me.thosea.developersdungeon.command.CommandHandler;
+import me.thosea.developersdungeon.event.AutoReactionListener;
 import me.thosea.developersdungeon.event.ButtonListener;
 import me.thosea.developersdungeon.event.EchoMessageListener;
 import me.thosea.developersdungeon.event.ForumListener;
@@ -78,7 +79,8 @@ public final class Main {
 				new ModalResponseListener(),
 				new LogMessageListener(),
 				new PChannelListener(),
-				new LeaveListener());
+				new LeaveListener(),
+				new AutoReactionListener());
 		jda.updateCommands().addCommands(CommandHandler.buildCommands()).queue();
 	}
 
