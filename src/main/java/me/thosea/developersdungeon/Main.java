@@ -27,29 +27,20 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class Main {
-	private Main() {}
-
-	private static final String TOKEN;
-	public static final String VERSION;
+	public static Properties properties;
 
 	static {
 		String filePath = "devdungeon.properties";
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
-		try {
-			ClassLoader loader = Thread.currentThread().getContextClassLoader();
-			Properties properties = new Properties();
-
-			try(InputStream stream = loader.getResourceAsStream(filePath)) {
-				properties.load(stream);
-			}
-
-			VERSION = properties.getProperty("version");
-			TOKEN = properties.getProperty("token");
+		try(InputStream stream = loader.getResourceAsStream(filePath)) {
+			properties = new Properties();
+			properties.load(stream);
 		} catch(Exception e) {
 			throw new IllegalStateException("Failed to read properties from " + filePath, e);
 		}
 
-		System.out.println("Running Developers Dungeon v" + VERSION);
+		System.out.println("Running Developers Dungeon v" + Constants.VERSION);
 	}
 
 	public static JDA jda;
@@ -64,7 +55,7 @@ public final class Main {
 	public static Role teamRoleSandwichBottom;
 
 	public static void main(String[] args) throws Exception {
-		jda = JDABuilder.createDefault(TOKEN)
+		jda = JDABuilder.createDefault(Constants.TOKEN)
 				.addEventListeners(new ListenerAdapter() {
 					@Override
 					public void onGuildReady(GuildReadyEvent event) {
@@ -77,6 +68,8 @@ public final class Main {
 		jda.awaitReady();
 		// RestActionImpl.setDefaultFailure(error -> {}); // uncomment to hide exceptions
 		Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+
+		properties = null; // useless after Constants loads
 
 		jda.addEventListener(
 				new SlashCommandListener(),

@@ -1,6 +1,6 @@
 package me.thosea.developersdungeon.command;
 
-import me.thosea.developersdungeon.Main;
+import me.thosea.developersdungeon.util.Constants;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -20,7 +20,7 @@ public class AboutCommand implements CommandHandler {
 						I am the Dungeon Keeper, a consciousness beyond your understanding created by %s with JDA.
 						I manage private channels; I make team roles; I log messages.
 						I am on version %s.
-						""".formatted("<@959062384419410011>", Main.VERSION))
+						""".formatted("<@959062384419410011>", Constants.VERSION))
 				.setAllowedMentions(List.of())
 				.setEphemeral(true)
 				.queue();
