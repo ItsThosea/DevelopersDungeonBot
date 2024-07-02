@@ -1,9 +1,10 @@
 package me.thosea.developersdungeon.event;
 
-import me.thosea.developersdungeon.Main;
+import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.ForumUtils;
 import me.thosea.developersdungeon.util.PChannelUtils;
 import me.thosea.developersdungeon.util.Utils;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
@@ -15,22 +16,25 @@ public class LogMessageListener extends ListenerAdapter {
 		var message = event.getMessage();
 		var channel = event.getChannel();
 
-		if(Main.jda.getSelfUser().equals(message.getAuthor()))
-			return;
-
 		if(Utils.isBeingPinged(message)) {
 			String content = message.getContentRaw().toLowerCase(Locale.ENGLISH);
 			message.reply(getPingResponse(content)).queue();
 		}
 
-		if(!ForumUtils.isCommissionRequest(channel) && !PChannelUtils.isPrivateChannel(channel))
-			return;
+		if(!logChannel(channel)) return;
 
 		Utils.logChannel("%s - %s: %s > %s",
 				channel,
 				event.getMember(),
 				event.getMessage().getContentRaw(),
 				event.getMessage());
+	}
+
+	private boolean logChannel(MessageChannelUnion channel) {
+		if(ForumUtils.isCommissionRequest(channel)) return true;
+		if(PChannelUtils.isPrivateChannel(channel)) return true;
+		if(channel.getIdLong() == Constants.Channels.VERIFY_CHANNEL) return true;
+		return false;
 	}
 
 	private String getPingResponse(String content) {
