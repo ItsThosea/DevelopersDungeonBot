@@ -60,7 +60,7 @@ public class ButtonListener extends ListenerAdapter {
 			@Override
 			public void handle(Member member, ButtonInteractionEvent event, String[] args) {
 				if(!Constants.BOT_ADMINS.contains(member.getIdLong())) {
-					event.reply("You aren't Thosea!").setEphemeral(true).queue();
+					event.reply("You can't do that!").setEphemeral(true).queue();
 					return;
 				}
 
