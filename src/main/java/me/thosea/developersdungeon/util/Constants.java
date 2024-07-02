@@ -12,6 +12,8 @@ public final class Constants {
 
 	public static class Channels {
 		public static final long GENERAL_CHANNEL = id("channels.general");
+		public static final long INFORMATION_CHANNEL = id("channels.information");
+
 		public static final long MINOR_LOG_CHANNEL = id("channels.minor_log");
 		public static final long MAJOR_LOG_CHANNEL = id("channels.major_log");
 		public static final long CHANNEL_LOG_CHANNEL = id("channels.channel_log");
@@ -40,8 +42,10 @@ public final class Constants {
 	}
 	private static long id(String key) {
 		try {
-			return Long.parseLong(str(key));
-		} catch(NumberFormatException e) {
+			long result = Long.parseLong(str(key));
+			if(result < -10) throw new IllegalStateException("Negative values cannot be below -10");
+			return result;
+		} catch(NumberFormatException | IllegalStateException e) {
 			throw new IllegalStateException("Invalid ID for " + key, e);
 		}
 	}

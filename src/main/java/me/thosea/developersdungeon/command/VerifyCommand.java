@@ -46,20 +46,26 @@ public class VerifyCommand implements CommandHandler {
 					.setAllowedMentions(List.of())
 					.queue();
 		} else {
-			Main.guild.addRoleToMember(target, verifiedRole).queue(i_ -> {
-				event.reply("Verified " + target.getAsMention() + ".")
-						.setEphemeral(true)
-						.setAllowedMentions(List.of())
-						.queue();
+			event.reply("Verified " + target.getAsMention() + ".")
+					.setEphemeral(true)
+					.setAllowedMentions(List.of())
+					.queue();
+			verify(member, target, verifiedRole);
+		}
+	}
 
-				if(Main.generalChannel != null) {
-					Main.generalChannel
-							.sendMessage("Welcome to Developers Dungeon, " + target.getAsMention() + "!")
-							.queue();
+	public static void verify(Member verifier, Member target, Role verifiedRole) {
+		Main.guild.addRoleToMember(target, verifiedRole).queue(i_ -> {
+			if(Main.generalChannel != null) {
+				String msg = "Welcome to Developers Dungeon, " + target.getAsMention() + "!";
+				if(Constants.Channels.INFORMATION_CHANNEL > 0) {
+					msg += " Please check out <#" + Constants.Channels.INFORMATION_CHANNEL + ">!";
 				}
 
-				Utils.logMinor("%s verified %s", member, target);
-			});
-		}
+				Main.generalChannel.sendMessage(msg).queue();
+			}
+
+			Utils.logMinor("%s verified %s", verifier, target);
+		});
 	}
 }
