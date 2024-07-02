@@ -92,7 +92,7 @@ public final class Main {
 
 	private static void guildReady(GuildReadyEvent event) {
 		Guild guild = event.getGuild();
-		if(guild.getIdLong() != Constants.DEVELOPER_DUNGEONS_SERVER_ID) {
+		if(guild.getIdLong() != Constants.SERVER_ID) {
 			guild.leave().queue();
 			return;
 		}

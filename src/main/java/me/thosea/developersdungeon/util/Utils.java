@@ -38,7 +38,7 @@ public final class Utils {
 
 	public static boolean isAdmin(Member member) {
 		long id = member.getIdLong();
-		return Constants.BOT_ADMINS.contains(id) || member.hasPermission(Permission.MANAGE_SERVER);
+		return Constants.ADMINS.contains(id) || member.hasPermission(Permission.MANAGE_SERVER);
 	}
 
 	public static void logMinor(String message, Object... args) {

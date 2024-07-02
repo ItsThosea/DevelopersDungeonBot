@@ -25,7 +25,7 @@ public class DebugCommand implements CommandHandler {
 
 	@Override
 	public void handle(Member member, SlashCommandInteraction event) {
-		if(!Constants.BOT_ADMINS.contains(member.getIdLong())) {
+		if(!Constants.ADMINS.contains(member.getIdLong())) {
 			event.reply("You can't do that!")
 					.setEphemeral(true)
 					.queue();

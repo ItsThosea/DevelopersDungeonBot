@@ -2,9 +2,9 @@ package me.thosea.developersdungeon.util;
 
 import it.unimi.dsi.fastutil.longs.LongList;
 
-public class Constants {
-	public static final long DEVELOPER_DUNGEONS_SERVER_ID = 989441509193551874L;
-	public static final LongList BOT_ADMINS = LongList.of(959062384419410011L);
+public final class Constants {
+	public static final long SERVER_ID = 989441509193551874L;
+	public static final LongList ADMINS = LongList.of(959062384419410011L);
 
 	public static class Channels {
 		public static final long GENERAL_CHANNEL = 1254606017250201612L;
