@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.event.button.ButtonHandler;
+import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.TeamRoleUtils;
 import me.thosea.developersdungeon.util.TeamRoleUtils.TeamRolePair;
 import me.thosea.developersdungeon.util.Utils;
@@ -55,8 +56,8 @@ public class TeamCommand implements CommandHandler {
 
 	@Override
 	public void handle(Member member, SlashCommandInteraction event) {
-		if(event.getChannel().getIdLong() != 1254942520920506369L) {
-			event.reply("You can only run this command in <#1254942520920506369>!")
+		if(event.getChannel().getIdLong() != Constants.Channels.BOTS_CHANNEL) {
+			event.reply("You can only run this command in <#" + Constants.Channels.BOTS_CHANNEL + ">!")
 					.setEphemeral(true)
 					.queue();
 			return;
@@ -204,12 +205,8 @@ public class TeamCommand implements CommandHandler {
 				rolePair.baseRole().getName(),
 				name);
 
-		rolePair.baseRole().getManager()
-				.setName(name + " (Team)")
-				.queue();
-		rolePair.ownerRole().getManager()
-				.setName(name + " (Team Owner)")
-				.queue();
+		rolePair.baseRole().getManager().setName(name).queue();
+		rolePair.ownerRole().getManager().setName(name + " (Owner)").queue();
 		event.reply("Your team has been renamed.").queue();
 	}
 
@@ -282,11 +279,9 @@ public class TeamCommand implements CommandHandler {
 
 		final Role baseRole = base;
 		final Role ownerRole = owner;
-		event.deferReply()
-				.setEphemeral(event.getChannel().getIdLong() != 1254942520920506369L)
-				.queue(hook -> {
-					handleInfo(hook, baseRole, ownerRole);
-				});
+		event.deferReply().queue(hook -> {
+			handleInfo(hook, baseRole, ownerRole);
+		});
 	}
 
 	// Think you've seen cursed?
