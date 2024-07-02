@@ -1,6 +1,7 @@
 package me.thosea.developersdungeon.command;
 
 import me.thosea.developersdungeon.Main;
+import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -21,8 +22,8 @@ public class UnverifyCommand implements CommandHandler {
 
 	@Override
 	public void handle(Member member, SlashCommandInteraction event) {
-		Role requiredRole = Main.guild.getRoleById(1256763621053304863L);
-		Role verifiedRole = Main.guild.getRoleById(1256188860296069132L);
+		Role requiredRole = Main.guild.getRoleById(Constants.Roles.STAFF);
+		Role verifiedRole = Main.guild.getRoleById(Constants.Roles.VERIFIED);
 
 		if(requiredRole == null || verifiedRole == null) {
 			event.reply("Failed to find roles. This is a bug.")

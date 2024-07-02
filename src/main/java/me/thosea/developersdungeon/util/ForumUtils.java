@@ -50,7 +50,7 @@ public final class ForumUtils {
 	}
 
 	public static boolean isCommissionRequest(Channel channel) {
-		return channel instanceof ThreadChannel thread && thread.getParentChannel().getIdLong() == 1237699021804671039L;
+		return channel instanceof ThreadChannel thread && thread.getParentChannel().getIdLong() == Constants.Channels.COMMISSIONS_CHANNEL;
 	}
 
 	public static MessageEmbed makeStatusEmbed(String status) {
