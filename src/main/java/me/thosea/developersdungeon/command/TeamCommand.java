@@ -21,6 +21,7 @@ import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
+import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.awt.Color;
@@ -39,6 +40,13 @@ public class TeamCommand implements CommandHandler {
 	@Override
 	public SlashCommandData makeCommandData() {
 		return Commands.slash("team", "Make or break (or even modify) a team role and its color.")
+				.addSubcommandGroups(new SubcommandGroupData("settings", "Your team's settings.")
+						.addSubcommands(new SubcommandData("mentionable", "Change whether your team can be mentioned")
+								.addOption(OptionType.BOOLEAN, "value", "Whether your team can be pinged", true))
+						.addSubcommands(new SubcommandData("color", "Change your team color")
+								.addOption(OptionType.STRING, "color", "Color (R,G,B or \"random\")", true))
+						.addSubcommands(new SubcommandData("rename", "Rename your team")
+								.addOption(OptionType.STRING, "name", "New role name", true)))
 				.addSubcommands(new SubcommandData("create", "Make a new team")
 						.addOption(OptionType.STRING, "name", "Role Name (you can change this later)", true)
 						.addOption(OptionType.STRING, "color", "Color (can be changed later, R,G,B or \"random\")"))
@@ -46,10 +54,6 @@ public class TeamCommand implements CommandHandler {
 				.addSubcommands(new SubcommandData("invite", "Invite somebody else")
 						.addOption(OptionType.USER, "target", "Who to invite.", true))
 				.addSubcommands(new SubcommandData("leave", "Leave your team"))
-				.addSubcommands(new SubcommandData("rename", "Rename your team")
-						.addOption(OptionType.STRING, "name", "New role name", true))
-				.addSubcommands(new SubcommandData("setcolor", "Change your team color")
-						.addOption(OptionType.STRING, "color", "Color (R,G,B or \"random\")", true))
 				.addSubcommands(new SubcommandData("transfer", "Change the team owner")
 						.addOption(OptionType.USER, "target", "The new team owner.", true))
 				.addSubcommands(new SubcommandData("info", "Display info about your team or the specified team.")
@@ -70,6 +74,11 @@ public class TeamCommand implements CommandHandler {
 			return;
 		}
 
+		if("settings".equals(event.getSubcommandGroup())) {
+			handleSettings(member, event);
+			return;
+		}
+
 		switch(event.getSubcommandName()) {
 			case "create" -> handleCreate(member, event);
 			case "delete" -> handleDelete(member, event);
@@ -77,8 +86,6 @@ public class TeamCommand implements CommandHandler {
 					"%s - you've been invited to join the team of %s by %s.",
 					ButtonHandler.ID_JOIN_TEAM_ROLE, false);
 			case "leave" -> handleLeave(member, event);
-			case "rename" -> handleRename(member, event);
-			case "setcolor" -> handleSetColor(member, event);
 			case "transfer" -> handleRequest(member, event,
 					"%s - you've been invited to take ownership of team %s by %s.",
 					ButtonHandler.ID_TAKE_TEAM_OWNERSHIP, true);
@@ -87,8 +94,35 @@ public class TeamCommand implements CommandHandler {
 			case "list", "listids" -> event.deferReply().queue(hook -> {
 				handleList(hook, event.getSubcommandName().equals("listids"));
 			});
-			default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
+			case null, default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
 		}
+	}
+
+	private void handleSettings(Member member, SlashCommandInteraction event) {
+		switch(event.getSubcommandName()) {
+			case "mentionable" -> handleMentionable(member, event);
+			case "rename" -> handleRename(member, event);
+			case "color" -> handleSetColor(member, event);
+			case null, default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
+		}
+	}
+
+	private void handleMentionable(Member member, SlashCommandInteraction event) {
+		TeamRolePair rolePair = TeamRoleUtils.getTeamRoles(member);
+
+		if(rolePair.eitherNull()) {
+			event.reply("You aren't an owner of a team.")
+					.setEphemeral(true)
+					.queue();
+			return;
+		}
+
+		boolean mentionable = event.getOption("value", false, OptionMapping::getAsBoolean);
+
+		event.deferReply().queue(hook -> {
+			rolePair.baseRole().getManager().setMentionable(mentionable).queue();
+			hook.editOriginal("Your team is now " + (mentionable ? "" : "not ") + "mentionable.").queue();
+		});
 	}
 
 	// create mod reference??
@@ -215,6 +249,7 @@ public class TeamCommand implements CommandHandler {
 				rolePair.baseRole().getName(),
 				name);
 
+
 		rolePair.baseRole().getManager().setName(name).queue();
 		rolePair.ownerRole().getManager().setName(name + " (Owner)").queue();
 		event.reply("Your team has been renamed.").queue();
@@ -227,7 +262,7 @@ public class TeamCommand implements CommandHandler {
 			return;
 		}
 
-		String colorStr = event.getOption("color", OptionMapping::getAsString);
+		String colorStr = event.getOption("color", "", OptionMapping::getAsString);
 		Color color = Utils.parseColor(colorStr, event);
 		if(color == null) return;
 
@@ -386,9 +421,7 @@ public class TeamCommand implements CommandHandler {
 		List<Pair<Role, Consumer<Member>>> toSearch = new ArrayList<>();
 
 		int roles = 0;
-		int avgRed = 0;
-		int avgGreen = 0;
-		int avgBlue = 0;
+		int avgR = 0, avgG = 0, avgB = 0;
 
 		for(Role role : Main.guild.getRoles()) {
 			if(!TeamRoleUtils.isTeamRole(role)) continue;
@@ -399,9 +432,9 @@ public class TeamCommand implements CommandHandler {
 
 			if(role.getColor() != null) {
 				roles++;
-				avgRed += role.getColor().getRed();
-				avgGreen += role.getColor().getGreen();
-				avgBlue += role.getColor().getBlue();
+				avgR += role.getColor().getRed();
+				avgG += role.getColor().getGreen();
+				avgB += role.getColor().getBlue();
 			}
 
 			toSearch.add(Pair.of(ownerRole, member -> {
@@ -420,7 +453,7 @@ public class TeamCommand implements CommandHandler {
 			return;
 		}
 
-		Color color = new Color(avgRed / roles, avgGreen / roles, avgBlue / roles);
+		Color color = new Color(avgR / roles, avgG / roles, avgB / roles);
 		builder.setColor(color);
 		builder.appendDescription("\nAverage Color: " + Utils.colorToString(color));
 
