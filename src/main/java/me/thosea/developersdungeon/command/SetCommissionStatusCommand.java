@@ -55,6 +55,11 @@ public class SetCommissionStatusCommand implements CommandHandler {
 							message.getEmbeds().get(1))
 					.setAllowedMentions(List.of())
 					.queue();
+
+			channel.sendMessage(member.getAsMention() + " changed the commission status to " + status)
+					.setAllowedMentions(List.of())
+					.queue();
+
 			sender.accept("Edited the status to " + status + " > " + message.getJumpUrl());
 			Utils.logMinor("%s edited commission status of channel %s to %s", member, channel, status);
 		});
