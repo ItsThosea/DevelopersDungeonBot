@@ -37,12 +37,16 @@ public final class ForumUtils {
 			return;
 		}
 
-		channel.getHistoryFromBeginning(5).queue(list -> {
-			for(Message msg : list.getRetrievedHistory()) {
-				if(msg.getAuthor().equals(Main.jda.getSelfUser())) {
-					handler.accept(msg);
-					return;
-				}
+		channel.getHistoryFromBeginning(5).queue(history -> {
+			List<Message> list = history.getRetrievedHistory();
+
+			for(int i = list.size() - 1; i >= 0; i--) {
+				Message msg = list.get(i);
+				if(!msg.getAuthor().equals(Main.jda.getSelfUser())) continue;
+				if(msg.getEmbeds().isEmpty()) continue;
+
+				handler.accept(msg);
+				return;
 			}
 
 			handler.accept(null);
