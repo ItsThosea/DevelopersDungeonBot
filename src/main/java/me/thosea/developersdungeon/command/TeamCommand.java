@@ -62,7 +62,8 @@ public class TeamCommand implements CommandHandler {
 
 	@Override
 	public void handle(Member member, SlashCommandInteraction event) {
-		if(event.getChannel().getIdLong() != Constants.Channels.BOTS_CHANNEL) {
+		long id = event.getChannelIdLong();
+		if(Constants.Channels.BOTS_CHANNEL > 0 && id != Constants.Channels.BOTS_CHANNEL) {
 			event.reply("You can only run this command in <#" + Constants.Channels.BOTS_CHANNEL + ">!")
 					.setEphemeral(true)
 					.queue();

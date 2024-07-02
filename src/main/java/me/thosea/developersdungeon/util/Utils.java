@@ -47,10 +47,12 @@ public final class Utils {
 
 	public static void logMinor(String message) {
 		System.out.println("[MINOR] " + message);
-		Main.minorLogChannel.sendMessage(message)
-				.setAllowedMentions(List.of())
-				.setSuppressEmbeds(true)
-				.queue();
+		if(Main.minorLogChannel != null) {
+			Main.minorLogChannel.sendMessage(message)
+					.setAllowedMentions(List.of())
+					.setSuppressEmbeds(true)
+					.queue();
+		}
 	}
 
 	public static void logMajor(String message, Object... args) {
@@ -59,10 +61,12 @@ public final class Utils {
 
 	public static void logMajor(String message) {
 		System.out.println("[MAJOR] " + message);
-		Main.majorLogChannel.sendMessage(message)
-				.setAllowedMentions(List.of())
-				.setSuppressEmbeds(true)
-				.queue();
+		if(Main.majorLogChannel != null) {
+			Main.majorLogChannel.sendMessage(message)
+					.setAllowedMentions(List.of())
+					.setSuppressEmbeds(true)
+					.queue();
+		}
 	}
 
 	public static void logChannel(String message, Object... args) {
@@ -71,10 +75,12 @@ public final class Utils {
 
 	public static void logChannel(String message) {
 		System.out.println("[CHANNEL] " + message);
-		Main.channelLogChannel.sendMessage(message)
-				.setAllowedMentions(List.of())
-				.setSuppressEmbeds(true)
-				.queue();
+		if(Main.channelLogChannel != null) {
+			Main.channelLogChannel.sendMessage(message)
+					.setAllowedMentions(List.of())
+					.setSuppressEmbeds(true)
+					.queue();
+		}
 	}
 
 	private static Object[] transformArgs(Object[] args) {

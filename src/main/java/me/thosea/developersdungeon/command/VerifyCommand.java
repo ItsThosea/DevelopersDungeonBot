@@ -51,9 +51,12 @@ public class VerifyCommand implements CommandHandler {
 						.setEphemeral(true)
 						.setAllowedMentions(List.of())
 						.queue();
-				Main.generalChannel
-						.sendMessage("Welcome to Developers Dungeon, " + target.getAsMention() + "!")
-						.queue();
+
+				if(Main.generalChannel != null) {
+					Main.generalChannel
+							.sendMessage("Welcome to Developers Dungeon, " + target.getAsMention() + "!")
+							.queue();
+				}
 
 				Utils.logMinor("%s verified %s", member, target);
 			});

@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import okhttp3.OkHttpClient;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
 import java.util.Properties;
@@ -46,10 +47,10 @@ public final class Main {
 	public static JDA jda;
 	public static Guild guild;
 
-	public static TextChannel generalChannel;
-	public static TextChannel minorLogChannel;
-	public static TextChannel majorLogChannel;
-	public static TextChannel channelLogChannel;
+	@Nullable public static TextChannel generalChannel;
+	@Nullable public static TextChannel minorLogChannel;
+	@Nullable public static TextChannel majorLogChannel;
+	@Nullable public static TextChannel channelLogChannel;
 
 	public static Role teamRoleSandwichTop;
 	public static Role teamRoleSandwichBottom;
@@ -68,8 +69,6 @@ public final class Main {
 		jda.awaitReady();
 		// RestActionImpl.setDefaultFailure(error -> {}); // uncomment to hide exceptions
 		Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
-
-		properties = null; // useless after Constants loads
 
 		jda.addEventListener(
 				new SlashCommandListener(),
@@ -96,16 +95,16 @@ public final class Main {
 		Main.guild = guild;
 
 		if((generalChannel = guild.getTextChannelById(Constants.Channels.GENERAL_CHANNEL)) == null) {
-			oops("No general channel found.");
+			System.out.println("No general channel found. Won't send welcome messages.");
 		}
 		if((minorLogChannel = guild.getTextChannelById(Constants.Channels.MINOR_LOG_CHANNEL)) == null) {
-			oops("No minor log channel found.");
+			System.out.println("No minor log channel found. Won't send minor logs to discord.");
 		}
 		if((majorLogChannel = guild.getTextChannelById(Constants.Channels.MAJOR_LOG_CHANNEL)) == null) {
-			oops("No major log channel found.");
+			System.out.println("No major log channel found. Won't send major logs to discord.");
 		}
 		if((channelLogChannel = guild.getTextChannelById(Constants.Channels.CHANNEL_LOG_CHANNEL)) == null) {
-			oops("No channel log channel found.");
+			System.out.println("No channel log channel found. Won't send channel logs to discord.");
 		}
 
 		if((teamRoleSandwichTop = guild.getRoleById(Constants.Roles.TEAM_ROLE_SANDWICH_TOP)) == null) {
