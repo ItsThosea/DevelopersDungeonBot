@@ -92,8 +92,7 @@ public class DebugCommand implements CommandHandler {
 	}
 
 	private static void handleOpcode2(InteractionHook hook, String[] args) {
-		long targetId;
-		long roleId;
+		long targetId, roleId;
 		try {
 			String target = args[0];
 			if(target.startsWith("<@")) {

@@ -242,8 +242,7 @@ public class TeamCommand implements CommandHandler {
 
 	private void handleInfo(Member member, SlashCommandInteraction event) {
 		IMentionable target = event.getOption("target", OptionMapping::getAsMentionable);
-		Role base;
-		Role owner;
+		Role base, owner;
 
 		if(target == null || target.equals(member)) {
 			base = TeamRoleUtils.getTeamRoles(member).baseRole();
