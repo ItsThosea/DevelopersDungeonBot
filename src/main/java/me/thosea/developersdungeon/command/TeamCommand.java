@@ -37,23 +37,23 @@ public class TeamCommand implements CommandHandler {
 		return Commands.slash("team", "Make or break (or even modify) a team role and its color.")
 				.addSubcommandGroups(new SubcommandGroupData("settings", "Your team's settings.")
 						.addSubcommands(new SubcommandData("mentionable", "Whether your team can be mentioned.").addOption(OptionType.BOOLEAN, "value", "Whether your team can be pinged."))
-				.addSubcommands(new SubcommandData("create", "Make a new team")
-						.addOption(OptionType.STRING, "name", "Role Name (you can change this later)", true)
-						.addOption(OptionType.STRING, "color", "Color (can be changed later, R,G,B or \"random\")"))
-				.addSubcommands(new SubcommandData("delete", "Delete your team"))
-				.addSubcommands(new SubcommandData("invite", "Invite somebody else")
-						.addOption(OptionType.USER, "target", "Who to invite.", true))
-				.addSubcommands(new SubcommandData("leave", "Leave your team"))
-				.addSubcommands(new SubcommandData("rename", "Rename your team")
-						.addOption(OptionType.STRING, "name", "New role name", true))
-				.addSubcommands(new SubcommandData("setcolor", "Change your team color")
-						.addOption(OptionType.STRING, "color", "Color (R,G,B or \"random\")", true))
-				.addSubcommands(new SubcommandData("transfer", "Change the team owner")
-						.addOption(OptionType.USER, "target", "The new team owner.", true))
-				.addSubcommands(new SubcommandData("info", "Display info about your team or the specified team.")
-						.addOption(OptionType.MENTIONABLE, "target", "Target team or user. Leave blank to check your own team."))
-				.addSubcommands(new SubcommandData("kick", "Kick somebody from the team")
-						.addOption(OptionType.USER, "target", "Who to kick.", true)));
+						.addSubcommands(new SubcommandData("create", "Make a new team")
+								.addOption(OptionType.STRING, "name", "Role Name (you can change this later)", true)
+								.addOption(OptionType.STRING, "color", "Color (can be changed later, R,G,B or \"random\")"))
+						.addSubcommands(new SubcommandData("delete", "Delete your team"))
+						.addSubcommands(new SubcommandData("invite", "Invite somebody else")
+								.addOption(OptionType.USER, "target", "Who to invite.", true))
+						.addSubcommands(new SubcommandData("leave", "Leave your team"))
+						.addSubcommands(new SubcommandData("rename", "Rename your team")
+								.addOption(OptionType.STRING, "name", "New role name", true))
+						.addSubcommands(new SubcommandData("setcolor", "Change your team color")
+								.addOption(OptionType.STRING, "color", "Color (R,G,B or \"random\")", true))
+						.addSubcommands(new SubcommandData("transfer", "Change the team owner")
+								.addOption(OptionType.USER, "target", "The new team owner.", true))
+						.addSubcommands(new SubcommandData("info", "Display info about your team or the specified team.")
+								.addOption(OptionType.MENTIONABLE, "target", "Target team or user. Leave blank to check your own team."))
+						.addSubcommands(new SubcommandData("kick", "Kick somebody from the team")
+								.addOption(OptionType.USER, "target", "Who to kick.", true)));
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class TeamCommand implements CommandHandler {
 		// goto doesn't exist, it can't hurt you. goto:
 		groups:
 		{
-			switch (event.getSubcommandGroup()) {
+			switch(event.getSubcommandGroup()) {
 				case "settings" -> handleSettings(member, event);
 				case null, default -> {
 					break groups;
@@ -95,24 +95,26 @@ public class TeamCommand implements CommandHandler {
 	}
 
 	private void handleSettings(Member member, SlashCommandInteraction event) {
-		switch (event.getSubcommandName()) {
+		switch(event.getSubcommandName()) {
 			case "mentionable" -> handleMentionable(member, event);
 			case null, default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
 		}
 	}
 
 	private void handleMentionable(Member member, SlashCommandInteraction event) {
-		if (TeamRoleUtils.getTeamRoles(member).eitherNull()) {
+		TeamRolePair rolePair = TeamRoleUtils.getTeamRoles(member);
+
+		if(rolePair.eitherNull()) {
 			event.reply("You aren't an owner of a team.")
 					.setEphemeral(true)
 					.queue();
 			return;
 		}
-		
-		Role baseRole = TeamRoleUtils.getTeamRoles(member).baseRole();
-		Role ownerRole = TeamRoleUtils.getTeamRoles(member).ownerRole();
+
+		Role baseRole = rolePair.baseRole();
+		Role ownerRole = rolePair.ownerRole();
 		boolean mentionable = event.getOption("value", false, OptionMapping::getAsBoolean);
-		
+
 		event.deferReply().queue(hook -> {
 			baseRole.getManager().setMentionable(mentionable).queue();
 			ownerRole.getManager().setMentionable(mentionable).queue();
