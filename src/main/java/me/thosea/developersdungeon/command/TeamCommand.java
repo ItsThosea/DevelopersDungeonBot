@@ -185,7 +185,7 @@ public class TeamCommand implements CommandHandler {
 
 					hook.editOriginal("Your team roles have been made: " + roles +
 									"\nInvite people with /team invite, " +
-									"or change the color with /team setcolor")
+									"or change settings with /team settings.")
 							.setAllowedMentions(List.of())
 							.queue();
 
