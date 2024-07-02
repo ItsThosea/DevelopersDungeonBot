@@ -25,7 +25,7 @@ public class Constants {
 		public static final long TEAM_ROLE_SANDWICH_TOP = 1256007545152077884L;
 		public static final long TEAM_ROLE_SANDWICH_BOTTOM = 1256007657144188968L;
 
-		public static final long TRUSTED = 1256763621053304863L;
+		public static final long STAFF = 1256763621053304863L;
 		public static final long VERIFIED = 1256188860296069132L;
 	}
 }

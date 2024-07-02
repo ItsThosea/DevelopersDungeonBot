@@ -22,7 +22,7 @@ public class VerifyCommand implements CommandHandler {
 
 	@Override
 	public void handle(Member member, SlashCommandInteraction event) {
-		Role requiredRole = Main.guild.getRoleById(Constants.Roles.TRUSTED);
+		Role requiredRole = Main.guild.getRoleById(Constants.Roles.STAFF);
 		Role verifiedRole = Main.guild.getRoleById(Constants.Roles.VERIFIED);
 
 		if(requiredRole == null || verifiedRole == null) {
