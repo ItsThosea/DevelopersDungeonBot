@@ -68,3 +68,8 @@ tasks.shadowJar.doLast {
     println("Overwriting $shadowFile onto $jarFile")
     Files.move(shadowFile.toPath(), jarFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
 }
+
+// dev branch
+jar {
+    archiveFileName = "${project.name}-${project.version}-dev.jar"
+}
