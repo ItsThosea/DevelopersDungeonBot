@@ -2,6 +2,7 @@ package me.thosea.developersdungeon.command;
 
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.event.button.ButtonHandler;
+import me.thosea.developersdungeon.util.Constants.Categories;
 import me.thosea.developersdungeon.util.ForumUtils;
 import me.thosea.developersdungeon.util.PChannelUtils;
 import me.thosea.developersdungeon.util.TeamRoleUtils;
@@ -71,8 +72,8 @@ public class MakeChannelCommand implements CommandHandler {
 		}
 
 		var request = type.equals("text")
-				? Main.guild.createTextChannel(channelName, Main.guild.getCategoryById(1248544270579924993L))
-				: Main.guild.createVoiceChannel(channelName, Main.guild.getCategoryById(1248544270579924993L));
+				? Main.guild.createTextChannel(channelName, Main.guild.getCategoryById(Categories.PRIVATE_CHANNEL_CATEGORY))
+				: Main.guild.createVoiceChannel(channelName, Main.guild.getCategoryById(Categories.PRIVATE_CHANNEL_CATEGORY));
 
 		request.reason(member.getAsMention());
 		request.queue(channel -> {

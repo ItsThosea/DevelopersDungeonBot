@@ -2,6 +2,7 @@ package me.thosea.developersdungeon.command;
 
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.event.ButtonListener;
+import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.ForumUtils;
 import me.thosea.developersdungeon.util.TeamRoleUtils;
 import net.dv8tion.jda.api.entities.Member;
@@ -24,8 +25,8 @@ public class DebugCommand implements CommandHandler {
 
 	@Override
 	public void handle(Member member, SlashCommandInteraction event) {
-		if(member.getIdLong() != 959062384419410011L) {
-			event.reply("You're not Thosea!")
+		if(!Constants.ADMINS.contains(member.getIdLong())) {
+			event.reply("You can't do that!")
 					.setEphemeral(true)
 					.queue();
 			return;
@@ -91,8 +92,7 @@ public class DebugCommand implements CommandHandler {
 	}
 
 	private static void handleOpcode2(InteractionHook hook, String[] args) {
-		long targetId;
-		long roleId;
+		long targetId, roleId;
 		try {
 			String target = args[0];
 			if(target.startsWith("<@")) {

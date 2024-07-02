@@ -9,6 +9,7 @@ import me.thosea.developersdungeon.event.LogMessageListener;
 import me.thosea.developersdungeon.event.ModalResponseListener;
 import me.thosea.developersdungeon.event.PChannelListener;
 import me.thosea.developersdungeon.event.SlashCommandListener;
+import me.thosea.developersdungeon.util.Constants;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -19,6 +20,7 @@ import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import okhttp3.OkHttpClient;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
 import java.util.Properties;
@@ -26,44 +28,35 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class Main {
-	private Main() {}
-
-	private static final String TOKEN;
-	public static final String VERSION;
+	public static Properties properties;
 
 	static {
 		String filePath = "devdungeon.properties";
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
-		try {
-			ClassLoader loader = Thread.currentThread().getContextClassLoader();
-			Properties properties = new Properties();
-
-			try(InputStream stream = loader.getResourceAsStream(filePath)) {
-				properties.load(stream);
-			}
-
-			VERSION = properties.getProperty("version");
-			TOKEN = properties.getProperty("token");
+		try(InputStream stream = loader.getResourceAsStream(filePath)) {
+			properties = new Properties();
+			properties.load(stream);
 		} catch(Exception e) {
 			throw new IllegalStateException("Failed to read properties from " + filePath, e);
 		}
 
-		System.out.println("Running Developers Dungeon v" + VERSION);
+		System.out.println("Running Developers Dungeon v" + Constants.VERSION);
 	}
 
 	public static JDA jda;
 	public static Guild guild;
 
-	public static TextChannel generalChannel;
-	public static TextChannel minorLogChannel;
-	public static TextChannel majorLogChannel;
-	public static TextChannel channelLogChannel;
+	@Nullable public static TextChannel generalChannel;
+	@Nullable public static TextChannel minorLogChannel;
+	@Nullable public static TextChannel majorLogChannel;
+	@Nullable public static TextChannel channelLogChannel;
 
 	public static Role teamRoleSandwichTop;
 	public static Role teamRoleSandwichBottom;
 
 	public static void main(String[] args) throws Exception {
-		jda = JDABuilder.createDefault(TOKEN)
+		jda = JDABuilder.createDefault(Constants.TOKEN)
 				.addEventListeners(new ListenerAdapter() {
 					@Override
 					public void onGuildReady(GuildReadyEvent event) {
@@ -91,7 +84,7 @@ public final class Main {
 
 	private static void guildReady(GuildReadyEvent event) {
 		Guild guild = event.getGuild();
-		if(guild.getIdLong() != 989441509193551874L) {
+		if(guild.getIdLong() != Constants.SERVER_ID) {
 			guild.leave().queue();
 			return;
 		}
@@ -101,23 +94,23 @@ public final class Main {
 		System.out.println("Found Developers Dungeon server, initializing");
 		Main.guild = guild;
 
-		if((generalChannel = guild.getTextChannelById(1254606017250201612L)) == null) {
-			oops("No general channel found.");
+		if((generalChannel = guild.getTextChannelById(Constants.Channels.GENERAL_CHANNEL)) == null) {
+			System.out.println("No general channel found. Won't send welcome messages.");
 		}
-		if((minorLogChannel = guild.getTextChannelById(1254944964891115520L)) == null) {
-			oops("No minor log channel found.");
+		if((minorLogChannel = guild.getTextChannelById(Constants.Channels.MINOR_LOG_CHANNEL)) == null) {
+			System.out.println("No minor log channel found. Won't send minor logs to discord.");
 		}
-		if((majorLogChannel = guild.getTextChannelById(1237689893971562498L)) == null) {
-			oops("No major log channel found.");
+		if((majorLogChannel = guild.getTextChannelById(Constants.Channels.MAJOR_LOG_CHANNEL)) == null) {
+			System.out.println("No major log channel found. Won't send major logs to discord.");
 		}
-		if((channelLogChannel = guild.getTextChannelById(1256002915647098890L)) == null) {
-			oops("No channel log channel found.");
+		if((channelLogChannel = guild.getTextChannelById(Constants.Channels.CHANNEL_LOG_CHANNEL)) == null) {
+			System.out.println("No channel log channel found. Won't send channel logs to discord.");
 		}
 
-		if((teamRoleSandwichTop = guild.getRoleById(1256007545152077884L)) == null) {
+		if((teamRoleSandwichTop = guild.getRoleById(Constants.Roles.TEAM_ROLE_SANDWICH_TOP)) == null) {
 			oops("No team role sandwich top");
 		}
-		if((teamRoleSandwichBottom = guild.getRoleById(1256007657144188968L)) == null) {
+		if((teamRoleSandwichBottom = guild.getRoleById(Constants.Roles.TEAM_ROLE_SANDWICH_BOTTOM)) == null) {
 			oops("No team role sandwich bottom");
 		}
 	}

@@ -2,6 +2,7 @@ package me.thosea.developersdungeon.util;
 
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.event.button.ButtonHandler;
+import me.thosea.developersdungeon.util.Constants.Categories;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -24,8 +25,8 @@ public final class PChannelUtils {
 	}
 
 	public static boolean isPrivateChannel(MessageChannel channel) {
-		return channel instanceof ICategorizableChannel categorizable //?????
-				&& categorizable.getParentCategoryIdLong() == 1248544270579924993L;
+		return channel instanceof ICategorizableChannel categorizable
+				&& categorizable.getParentCategoryIdLong() == Categories.PRIVATE_CHANNEL_CATEGORY;
 	}
 
 	public static void getOwner(MessageChannel channel, Consumer<String> handler) {

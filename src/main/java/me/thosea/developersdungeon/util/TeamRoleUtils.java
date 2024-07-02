@@ -70,8 +70,7 @@ public final class TeamRoleUtils {
 	}
 
 	public static TeamRolePair getTeamRoles(Member member) {
-		Role ownerRole = null;
-		Role baseRole = null;
+		Role ownerRole = null, baseRole = null;
 
 		for(Role role : member.getRoles()) {
 			if(!TeamRoleUtils.isTeamRole(role)) continue;
