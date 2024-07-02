@@ -205,12 +205,8 @@ public class TeamCommand implements CommandHandler {
 				rolePair.baseRole().getName(),
 				name);
 
-		rolePair.baseRole().getManager()
-				.setName(name + " (Team)")
-				.queue();
-		rolePair.ownerRole().getManager()
-				.setName(name + " (Team Owner)")
-				.queue();
+		rolePair.baseRole().getManager().setName(name).queue();
+		rolePair.ownerRole().getManager().setName(name + " (Owner)").queue();
 		event.reply("Your team has been renamed.").queue();
 	}
 
