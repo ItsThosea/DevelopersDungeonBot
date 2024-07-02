@@ -25,7 +25,7 @@ dependencies {
 
 processResources {
     filesMatching("devdungeon.properties") {
-        expand(version: version, token: System.getenv("DEVDUNGEON_TOKEN"))
+        expand(version: version, token: System.getenv("DEVDUNGEON_TEST_TOKEN"))
     }
 }
 
