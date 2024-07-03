@@ -491,7 +491,7 @@ public class TeamCommand implements CommandHandler {
 			event.reply("Invalid target!").setEphemeral(true).queue();
 			return;
 		} else if(target.getUser().isBot()) {
-			event.reply("You can't invite bots!").setEphemeral(true).queue();
+			event.reply("You can't send requests to bots!").setEphemeral(true).queue();
 			return;
 		} else if(target.getIdLong() == member.getIdLong()) {
 			event.reply("You can't target yourself!").setEphemeral(true).queue();
@@ -499,19 +499,23 @@ public class TeamCommand implements CommandHandler {
 		} else if(pair.eitherNull()) {
 			event.reply("You aren't an owner of a team!").setEphemeral(true).queue();
 			return;
-		} else if(!isTransfer) {
-			TeamRolePair targetPair = TeamRoleUtils.getTeamRoles(target);
-			if(targetPair.baseRole() != null) {
-				if(targetPair.baseRole().equals(pair.baseRole())) {
-					event.reply("They're already in your team!").setEphemeral(true).queue();
-				} else {
-					event.reply("They're already in a team!").setEphemeral(true).queue();
-				}
-
-				return;
-			}
 		} else if(!event.getChannel().asGuildMessageChannel().canTalk(target)) {
 			event.reply("They cant access this channel!").setEphemeral(true).queue();
+			return;
+		} else checkTarget:{
+			TeamRolePair targetPair = TeamRoleUtils.getTeamRoles(target);
+			if(targetPair.baseRole() == null) break checkTarget;
+
+			if(!targetPair.baseRole().equals(pair.baseRole())) {
+				event.reply("They're already in a team!").setEphemeral(true).queue();
+			} else {
+				if(isTransfer) {
+					break checkTarget;
+				} else {
+					event.reply("They're already in your team!").setEphemeral(true).queue();
+				}
+			}
+
 			return;
 		}
 
@@ -523,8 +527,10 @@ public class TeamCommand implements CommandHandler {
 			return;
 		}
 
-		requestCooldowns.computeIfAbsent(member.getIdLong(), i_ -> new LongOpenHashSet())
-				.add(target.getIdLong());
+		requestCooldowns.computeIfAbsent(member.getIdLong(), i_ -> new
+						LongOpenHashSet())
+						.
+				add(target.getIdLong());
 
 		Utils.logMinor("%s made team role %s request to %s for team %s",
 				member,
@@ -538,13 +544,18 @@ public class TeamCommand implements CommandHandler {
 						pair.baseRole(),
 						member.getAsMention()
 				))
-				.setAllowedMentions(List.of(MentionType.USER))
-				.setActionRow(Button.success(
+						.
+				setAllowedMentions(List.of(MentionType.USER))
+						.
+				setActionRow(Button.success(
 						button + "-" + target.getId()
 								+ "-" + member.getId()
-								+ "-" + pair.baseRole().getId(),
+								+ "-" + pair.baseRole().
+								getId(),
 						isTransfer ? "Take Ownership" : "Join"))
-				.queue(msg -> {
+						.
+				queue(msg ->
+				{
 					Utils.doLater(TimeUnit.SECONDS, 30, () -> {
 						requestCooldowns.computeIfPresent(member.getIdLong(), (i_, set) -> {
 							set.remove(target.getIdLong());
