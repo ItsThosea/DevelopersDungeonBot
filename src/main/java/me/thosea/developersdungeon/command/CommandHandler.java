@@ -25,7 +25,9 @@ public interface CommandHandler {
 				new TeamCommand(),
 				new AboutCommand(),
 				new VerifyCommand(),
-				new UnverifyCommand()
+				new UnverifyCommand(),
+				new ArchiveCommand(),
+				new UnarchiveCommand()
 		);
 		List<SlashCommandData> result = new ArrayList<>(handlers.size());
 

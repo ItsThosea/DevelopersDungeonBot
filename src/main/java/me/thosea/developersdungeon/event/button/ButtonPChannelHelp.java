@@ -19,6 +19,8 @@ public class ButtonPChannelHelp implements ButtonHandler {
 									/commissionchannels - Manipulate channels displayed in your commission forum post.
 									/deletechannel - Delete this channel.
 									/renamechannel - Rename this channel.
+									/archivechannel - Move your channel to the archived category.
+									/unarchivechannel - Move your channel back to the private rooms category.
 									To add or remove people or teams from accessing this channel, use the discord channel settings menu.
 									""")
 						.setColor(new Color(50, 168, 82))

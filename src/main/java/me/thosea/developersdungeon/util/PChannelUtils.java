@@ -25,8 +25,20 @@ public final class PChannelUtils {
 	}
 
 	public static boolean isPrivateChannel(MessageChannel channel) {
-		return channel instanceof ICategorizableChannel categorizable
-				&& categorizable.getParentCategoryIdLong() == Categories.PRIVATE_CHANNEL_CATEGORY;
+		if(channel instanceof ICategorizableChannel categorizable) {
+			long id = categorizable.getParentCategoryIdLong();
+			return id == Categories.PRIVATE_CHANNEL_CATEGORY || id == Categories.ARCHIVED_CHANNELS_CATEGORY;
+		} else {
+			return false;
+		}
+	}
+
+	public static boolean isArchived(MessageChannel channel) {
+		if(channel instanceof ICategorizableChannel categorizable) {
+			return categorizable.getParentCategoryIdLong() == Categories.ARCHIVED_CHANNELS_CATEGORY;
+		} else {
+			return false;
+		}
 	}
 
 	public static void getOwner(MessageChannel channel, Consumer<String> handler) {
