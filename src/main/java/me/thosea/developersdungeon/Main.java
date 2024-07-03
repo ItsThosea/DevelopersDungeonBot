@@ -9,8 +9,10 @@ import me.thosea.developersdungeon.event.LeaveListener;
 import me.thosea.developersdungeon.event.LogMessageListener;
 import me.thosea.developersdungeon.event.ModalResponseListener;
 import me.thosea.developersdungeon.event.PChannelListener;
+import me.thosea.developersdungeon.event.PingResponseMessageListener;
 import me.thosea.developersdungeon.event.SlashCommandListener;
 import me.thosea.developersdungeon.util.Constants;
+import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -31,17 +33,16 @@ import java.util.logging.Logger;
 public final class Main {
 	public static Properties properties;
 
-	static {
-		String filePath = "devdungeon.properties";
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+	@FunctionalInterface
+	public interface StreamHandler {
+		void accept(InputStream stream) throws Exception;
+	}
 
-		try(InputStream stream = loader.getResourceAsStream(filePath)) {
+	static {
+		Utils.loadResource("devdungeon.properties", stream -> {
 			properties = new Properties();
 			properties.load(stream);
-		} catch(Exception e) {
-			throw new IllegalStateException("Failed to read properties from " + filePath, e);
-		}
-
+		});
 		System.out.println("Running Developers Dungeon v" + Constants.VERSION);
 	}
 
@@ -80,7 +81,8 @@ public final class Main {
 				new LogMessageListener(),
 				new PChannelListener(),
 				new LeaveListener(),
-				new AutoReactionListener());
+				new AutoReactionListener(),
+				new PingResponseMessageListener());
 		jda.updateCommands().addCommands(CommandHandler.buildCommands()).queue();
 	}
 
