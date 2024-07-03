@@ -417,7 +417,7 @@ public class TeamCommand implements CommandHandler {
 
 	private void handleList(InteractionHook hook, boolean showId) {
 		EmbedBuilder builder = new EmbedBuilder();
-		builder.appendDescription("Team Roles in Developers Dungeon: ");
+		builder.appendDescription("Team roles in " + Main.guild.getName() + ":");
 		List<Pair<Role, Consumer<Member>>> toSearch = new ArrayList<>();
 
 		int roles = 0;
@@ -449,7 +449,7 @@ public class TeamCommand implements CommandHandler {
 		}
 
 		if(toSearch.isEmpty()) {
-			hook.editOriginal("There are no team roles empty.").queue();
+			hook.editOriginal("There are no team roles here.").queue();
 			return;
 		}
 
