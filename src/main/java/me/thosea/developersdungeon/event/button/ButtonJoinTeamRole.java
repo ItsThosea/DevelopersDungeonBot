@@ -1,6 +1,7 @@
 package me.thosea.developersdungeon.event.button;
 
 import me.thosea.developersdungeon.Main;
+import me.thosea.developersdungeon.util.TeamRoleUtils;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -23,6 +24,9 @@ public class ButtonJoinTeamRole implements ButtonHandler {
 			return;
 		} else if(!args[0].equals(member.getId())) {
 			event.reply("This request isn't for you.").setEphemeral(true).queue();
+			return;
+		} else if(TeamRoleUtils.hasTeamRole(member)) {
+			event.reply("You're in a team!").setEphemeral(true).queue();
 			return;
 		}
 
