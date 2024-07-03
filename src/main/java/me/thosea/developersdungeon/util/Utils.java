@@ -1,6 +1,7 @@
 package me.thosea.developersdungeon.util;
 
 import me.thosea.developersdungeon.Main;
+import me.thosea.developersdungeon.Main.StreamHandler;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.Member;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 
 import java.awt.Color;
+import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -130,6 +132,16 @@ public final class Utils {
 
 	public static String colorToString(Color color) {
 		return "(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ")";
+	}
+
+	public static void loadResource(String name, StreamHandler handler) {
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
+		try(InputStream stream = loader.getResourceAsStream(name)) {
+			handler.accept(stream);
+		} catch(Exception e) {
+			throw new IllegalStateException("Failed to read file from " + name, e);
+		}
 	}
 
 	public static String splitUserAndRoleMentions(String string) {
