@@ -43,7 +43,7 @@ public class ArchiveCommand implements CommandHandler {
 					.queue();
 
 			hook.editOriginal("Archived the channel.").queue();
-			Utils.logMinor("%s archived channel %s", member, channel);
+			Utils.logChannel("%s archived channel %s", member, channel);
 			channel.sendMessage("This channel has been archived by " + member.getAsMention() + ".")
 					.setAllowedMentions(List.of())
 					.queue();
