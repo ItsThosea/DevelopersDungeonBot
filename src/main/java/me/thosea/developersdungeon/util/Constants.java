@@ -28,6 +28,7 @@ public final class Constants {
 
 	public static class Categories {
 		public static final long PRIVATE_CHANNEL_CATEGORY = id("categories.private_channels");
+		public static final long ARCHIVED_CHANNELS_CATEGORY = id("categories.archived_channels");
 	}
 
 	public static class Messages {
