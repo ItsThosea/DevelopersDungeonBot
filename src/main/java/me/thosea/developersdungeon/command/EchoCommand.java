@@ -96,6 +96,17 @@ public class EchoCommand implements CommandHandler {
 		String footer = args.apply("footer");
 		String footerIconUrl = args.apply("footer_icon_url");
 
+		if(authorUrl != null && !Utils.isValidUrl(authorUrl)) {
+			event.reply("Invalid author URL!").setEphemeral(true).queue();
+			return null;
+		} else if(authorIconUrl != null && !Utils.isValidUrl(authorIconUrl)) {
+			event.reply("Invalid author icon URL!").setEphemeral(true).queue();
+			return null;
+		} else if(footerIconUrl != null && !Utils.isValidUrl(footerIconUrl)) {
+			event.reply("Invalid footer icon URL!").setEphemeral(true).queue();
+			return null;
+		}
+
 		builder.setTitle(title);
 		builder.setAuthor(author, authorUrl, authorIconUrl);
 
@@ -111,7 +122,6 @@ public class EchoCommand implements CommandHandler {
 			og.getChannel()
 					.sendMessageEmbeds(builder.build())
 					.setAllowedMentions(List.of())
-					.setEmbeds()
 					.queue(ourMsg -> {
 						Utils.logMinor("%s used echo (embed) in %s > %s", member, og.getChannel(), ourMsg);
 						og.delete().queue();
