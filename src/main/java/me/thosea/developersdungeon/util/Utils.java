@@ -2,12 +2,14 @@ package me.thosea.developersdungeon.util;
 
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.Main.StreamHandler;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.IMentionable;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Mentions;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Message.MentionType;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 
@@ -128,6 +130,10 @@ public final class Utils {
 					.queue();
 			return null;
 		}
+	}
+
+	public static boolean isValidUrl(String url) {
+		return url.length() <= MessageEmbed.URL_MAX_LENGTH && EmbedBuilder.URL_PATTERN.matcher(url).matches();
 	}
 
 	public static String colorToString(Color color) {
