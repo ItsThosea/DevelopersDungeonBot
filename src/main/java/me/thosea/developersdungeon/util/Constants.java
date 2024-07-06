@@ -17,6 +17,8 @@ public final class Constants {
 		public static final long VERIFY_CHANNEL = id("channels.verify");
 		public static final long SUGGESTIONS_CHANNEL = id("channels.suggestions");
 
+		public static final long ANNOUNCEMENTS_CHANNEL = id("channels.announcements");
+
 		public static final long MINOR_LOG_CHANNEL = id("channels.minor_log");
 		public static final long MAJOR_LOG_CHANNEL = id("channels.major_log");
 		public static final long CHANNEL_LOG_CHANNEL = id("channels.channel_log");
@@ -33,6 +35,10 @@ public final class Constants {
 
 	public static class Messages {
 		public static final long SUGGESTION_COUNT = id("messages.suggestion_count");
+	}
+
+	public static class MessageContent {
+		public static final String CF_PING = str("content.curseforge_ping");
 	}
 
 	public static class Roles {
