@@ -12,6 +12,9 @@ import me.thosea.developersdungeon.event.PChannelListener;
 import me.thosea.developersdungeon.event.PingResponseMessageListener;
 import me.thosea.developersdungeon.event.SlashCommandListener;
 import me.thosea.developersdungeon.util.Constants;
+import me.thosea.developersdungeon.util.Constants.Channels;
+import me.thosea.developersdungeon.util.Constants.MessageContent;
+import me.thosea.developersdungeon.util.Constants.Roles;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -19,6 +22,8 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -27,6 +32,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -84,6 +90,30 @@ public final class Main {
 				new AutoReactionListener(),
 				new PingResponseMessageListener());
 		jda.updateCommands().addCommands(CommandHandler.buildCommands()).queue();
+
+		scheduleCurseforgePing();
+	}
+
+	private static void scheduleCurseforgePing() {
+		var channel = (MessageChannel) guild.getChannelCache().getElementById(Channels.ANNOUNCEMENTS_CHANNEL);
+		if(channel == null) {
+			System.out.println("No valid announcements channel, won't schedule curseforge project ping.");
+			return;
+		}
+
+		long time = Utils.getNextCurseforgePingTime() - System.currentTimeMillis();
+		Utils.doLater(TimeUnit.MILLISECONDS, time, () -> {
+			String msg = """
+					**We're close to the end of the month!** Don't forget to cash out the CurseForge rewards before the month ends.
+					
+					%s https://authors.curseforge.com/#/reward-store
+					
+					%s
+					""".formatted(Emoji.fromUnicode("U+1F449"), MessageContent.CF_PING);
+
+			channel.sendMessage(msg).queue();
+			Utils.doLater(TimeUnit.MILLISECONDS, 2, Main::scheduleCurseforgePing);
+		});
 	}
 
 	private static void guildReady(GuildReadyEvent event) {
@@ -98,23 +128,23 @@ public final class Main {
 		System.out.println("Found Developers Dungeon server, initializing");
 		Main.guild = guild;
 
-		if((generalChannel = guild.getTextChannelById(Constants.Channels.GENERAL_CHANNEL)) == null) {
+		if((generalChannel = guild.getTextChannelById(Channels.GENERAL_CHANNEL)) == null) {
 			System.out.println("No general channel found. Won't send welcome messages.");
 		}
-		if((minorLogChannel = guild.getTextChannelById(Constants.Channels.MINOR_LOG_CHANNEL)) == null) {
+		if((minorLogChannel = guild.getTextChannelById(Channels.MINOR_LOG_CHANNEL)) == null) {
 			System.out.println("No minor log channel found. Won't send minor logs to discord.");
 		}
-		if((majorLogChannel = guild.getTextChannelById(Constants.Channels.MAJOR_LOG_CHANNEL)) == null) {
+		if((majorLogChannel = guild.getTextChannelById(Channels.MAJOR_LOG_CHANNEL)) == null) {
 			System.out.println("No major log channel found. Won't send major logs to discord.");
 		}
-		if((channelLogChannel = guild.getTextChannelById(Constants.Channels.CHANNEL_LOG_CHANNEL)) == null) {
+		if((channelLogChannel = guild.getTextChannelById(Channels.CHANNEL_LOG_CHANNEL)) == null) {
 			System.out.println("No channel log channel found. Won't send channel logs to discord.");
 		}
 
-		if((teamRoleSandwichTop = guild.getRoleById(Constants.Roles.TEAM_ROLE_SANDWICH_TOP)) == null) {
+		if((teamRoleSandwichTop = guild.getRoleById(Roles.TEAM_ROLE_SANDWICH_TOP)) == null) {
 			oops("No team role sandwich top");
 		}
-		if((teamRoleSandwichBottom = guild.getRoleById(Constants.Roles.TEAM_ROLE_SANDWICH_BOTTOM)) == null) {
+		if((teamRoleSandwichBottom = guild.getRoleById(Roles.TEAM_ROLE_SANDWICH_BOTTOM)) == null) {
 			oops("No team role sandwich bottom");
 		}
 	}
