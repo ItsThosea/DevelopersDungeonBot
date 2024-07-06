@@ -1,6 +1,7 @@
 package me.thosea.developersdungeon.other;
 
 import me.thosea.developersdungeon.util.Utils;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.utils.FileUpload;
 import org.jetbrains.annotations.Nullable;
@@ -19,6 +20,9 @@ public interface PingResponse {
 			normal("walls", "https://tenor.com/view/im-in-your-walls-gif-25753367"),
 			normal("happy", "https://tenor.com/view/animatic-battle-animatic-frolick-fun-play-gif-18082323931657388533"),
 			normal("hair", "Thanks for asking, I use dungeon-metal hair gel."),
+			normal("uwu", "No-"),
+			normal("clyde", Emoji.fromUnicode("U+1FAE1").getFormatted()),
+			normal("ai", "I may not be an AI...but..."),
 			normal("everyone", content -> {
 				return content.contains("dont")
 						? "Pfft, I'd never! Right...?"
@@ -42,8 +46,12 @@ public interface PingResponse {
 			}, () -> "" + System.currentTimeMillis()),
 			progressive("bedrock", "Beetroot seeds came to Java or Bedrock first?"),
 			progressive("bane of arthropods", "What enchantment can give spiders slowness?"),
-			progressive("1.18", "In what Bedrock version did wood become impossible to obtain in flat worlds without the bonus chest?"),
+			progressive("dandelions", "Other than carrots, what can be used to breed rabbits?"),
+			progressive("feather", "Before rotten flesh was added, what did zombies drop?"),
+			progressive("1.18.0", "In what Bedrock version did wood become impossible to obtain in flat worlds without the bonus chest?"),
+			progressive("crying obsidian", "What sad block was originally planned to set your respawn point before beds?"),
 			progressive("20100219", "Until what indev version did logs break faster than stone?"),
+			progressive("stevie", "What was the default player name in Minecraft Pocket Edition Lite?"),
 			progressive("help", "Help me..."),
 			progressive("ouch", "Ouch..."),
 			progressive("celestial", "No celestial calamity could ever even match this."),
