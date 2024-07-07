@@ -5,6 +5,7 @@ import me.thosea.developersdungeon.event.ButtonListener;
 import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.ForumUtils;
 import me.thosea.developersdungeon.util.TeamRoleUtils;
+import net.dv8tion.jda.api.entities.Invite;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -14,6 +15,9 @@ import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+
+import java.util.Comparator;
+import java.util.List;
 
 public class DebugCommand implements CommandHandler {
 	@Override
@@ -46,6 +50,24 @@ public class DebugCommand implements CommandHandler {
 			});
 		} else if(opcode == 3) {
 			handleOpcode3(event);
+		} else if(opcode == 4 || opcode == 5) {
+			event.deferReply()
+					.setEphemeral(opcode == 5)
+					.setAllowedMentions(List.of())
+					.queue(hook -> Main.guild.retrieveInvites().queue(list -> {
+						list = list.stream()
+								.filter(invite -> invite.getInviter() != null && invite.getUses() > 0)
+								.sorted(Comparator.comparingInt(Invite::getUses).reversed())
+								.toList();
+
+						StringBuilder builder = new StringBuilder("Invites: ");
+						list.forEach(invite -> {
+							builder.append('\n');
+							builder.append(invite.getInviter().getAsMention());
+							builder.append(" made an invite with ").append(invite.getUses()).append(" uses");
+						});
+						hook.editOriginal(builder.toString()).queue();
+					}));
 		} else {
 			event.reply("""
 							Invalid opcodes. Opcodes:
@@ -53,6 +75,8 @@ public class DebugCommand implements CommandHandler {
 							1: Delete commission request forum post
 							2: Give role (user, role)
 							3: List roles / isTeamRole
+							4: List invites
+							5: List invites (ephemeral)
 							""")
 					.setEphemeral(true)
 					.queue();
