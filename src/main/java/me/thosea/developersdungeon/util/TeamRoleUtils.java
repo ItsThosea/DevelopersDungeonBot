@@ -3,6 +3,7 @@ package me.thosea.developersdungeon.util;
 import me.thosea.developersdungeon.Main;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.internal.entities.MemberImpl;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
@@ -15,7 +16,7 @@ public final class TeamRoleUtils {
 	}
 
 	public static boolean hasTeamRole(Member member) {
-		for(Role role : member.getRoles()) {
+		for(Role role : ((MemberImpl) member).getRoleSet()) {
 			if(TeamRoleUtils.isTeamRole(role)) {
 				return true;
 			}
@@ -72,7 +73,7 @@ public final class TeamRoleUtils {
 	public static TeamRolePair getTeamRoles(Member member) {
 		Role ownerRole = null, baseRole = null;
 
-		for(Role role : member.getRoles()) {
+		for(Role role : ((MemberImpl) member).getRoleSet()) {
 			if(!TeamRoleUtils.isTeamRole(role)) continue;
 
 			if(TeamRoleUtils.isTeamOwnerRole(role)) {

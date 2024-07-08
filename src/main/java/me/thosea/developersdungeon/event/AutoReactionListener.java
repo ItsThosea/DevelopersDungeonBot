@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.internal.entities.MemberImpl;
 
 public class AutoReactionListener extends ListenerAdapter {
 	private static final Emoji YES = Emoji.fromUnicode("U+2705");
@@ -89,7 +90,8 @@ public class AutoReactionListener extends ListenerAdapter {
 					.queue(target -> {
 						Role verifiedRole = Main.guild.getRoleById(Roles.VERIFIED);
 
-						if(target.getRoles().contains(verifiedRole)) return;
+						if(Utils.hasRole(target, verifiedRole)) return;
+						if(Utils.isAdmin(target)) return;
 
 						if(isYes) {
 							VerifyCommand.verify(member, target, verifiedRole);
@@ -108,7 +110,7 @@ public class AutoReactionListener extends ListenerAdapter {
 	}
 
 	private boolean hasRole(Member member, long id) {
-		return member.getRoles().stream().anyMatch(role -> {
+		return ((MemberImpl) member).getRoleSet().stream().anyMatch(role -> {
 			return role.getIdLong() == id;
 		});
 	}
