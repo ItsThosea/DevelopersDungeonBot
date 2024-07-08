@@ -61,7 +61,7 @@ public final class Utils {
 	}
 
 	public static void logMinor(String message, Object... args) {
-		logMinor(String.format(message, transformArgs(args)));
+		logMinor(message.formatted(transformArgs(args)));
 	}
 
 	public static void logMinor(String message) {
@@ -75,7 +75,7 @@ public final class Utils {
 	}
 
 	public static void logMajor(String message, Object... args) {
-		logMajor(String.format(message, transformArgs(args)));
+		logMajor(message.formatted(transformArgs(args)));
 	}
 
 	public static void logMajor(String message) {
@@ -89,7 +89,7 @@ public final class Utils {
 	}
 
 	public static void logChannel(String message, Object... args) {
-		logChannel(String.format(message, transformArgs(args)));
+		logChannel(message.formatted(transformArgs(args)));
 	}
 
 	public static void logChannel(String message) {
