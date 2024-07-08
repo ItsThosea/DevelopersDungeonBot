@@ -34,7 +34,7 @@ public class EchoCommand implements CommandHandler {
 						.addOption(OptionType.STRING, "author", "Author")
 						.addOption(OptionType.STRING, "author_url", "Author URL")
 						.addOption(OptionType.STRING, "author_icon_url", "Author icon URL")
-						.addOption(OptionType.STRING, "color", "Color (Format: R,G,B or \"random\")")
+						.addOption(OptionType.STRING, "color", "Color (hex, R,G,B or \"random\")")
 						.addOption(OptionType.STRING, "footer", "Footer")
 						.addOption(OptionType.STRING, "footer_icon_url", "Footer Icon URL"));
 	}

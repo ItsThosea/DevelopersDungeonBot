@@ -44,12 +44,12 @@ public class TeamCommand implements CommandHandler {
 						.addSubcommands(new SubcommandData("mentionable", "Change whether your team can be mentioned")
 								.addOption(OptionType.BOOLEAN, "value", "Whether your team can be pinged", true))
 						.addSubcommands(new SubcommandData("color", "Change your team color")
-								.addOption(OptionType.STRING, "color", "Color (R,G,B or \"random\")", true))
+								.addOption(OptionType.STRING, "color", "Color (hex, R,G,B or \"random\")", true))
 						.addSubcommands(new SubcommandData("rename", "Rename your team")
 								.addOption(OptionType.STRING, "name", "New role name", true)))
 				.addSubcommands(new SubcommandData("create", "Make a new team")
 						.addOption(OptionType.STRING, "name", "Role Name (you can change this later)", true)
-						.addOption(OptionType.STRING, "color", "Color (can be changed later, R,G,B or \"random\")"))
+						.addOption(OptionType.STRING, "color", "Color (can be changed later, hex, R,G,B or \"random\")"))
 				.addSubcommands(new SubcommandData("delete", "Delete your team"))
 				.addSubcommands(new SubcommandData("invite", "Invite somebody else")
 						.addOption(OptionType.USER, "target", "Who to invite.", true))
@@ -183,9 +183,12 @@ public class TeamCommand implements CommandHandler {
 
 					String roles = baseRole.getAsMention() + " & " + ownerRole.getAsMention();
 
-					hook.editOriginal("Your team roles have been made: " + roles +
-									"\nInvite people with /team invite, " +
-									"or change settings with /team settings.")
+					hook.editOriginalEmbeds(new EmbedBuilder()
+									.setColor(baseRole.getColorRaw())
+									.setDescription("Your team roles have been made: " + roles +
+											"\nInvite people with /team invite, " +
+											"or change settings with /team settings.")
+									.build())
 							.setAllowedMentions(List.of())
 							.queue();
 
@@ -271,7 +274,11 @@ public class TeamCommand implements CommandHandler {
 
 		colorStr = Utils.colorToString(color);
 
-		event.reply("Changed your team color to " + colorStr).queue();
+		event.replyEmbeds(new EmbedBuilder()
+						.setColor(color)
+						.setDescription("Changed your team color to " + colorStr)
+						.build())
+				.queue();
 		Utils.logMinor("%s changed team color of %s to %s", member, rolePair.baseRole(), colorStr);
 	}
 
