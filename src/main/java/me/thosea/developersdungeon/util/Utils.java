@@ -10,8 +10,10 @@ import net.dv8tion.jda.api.entities.Mentions;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Message.MentionType;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
+import net.dv8tion.jda.internal.entities.MemberImpl;
 
 import java.awt.Color;
 import java.io.InputStream;
@@ -149,6 +151,10 @@ public final class Utils {
 					.queue();
 			return null;
 		}
+	}
+
+	public static boolean hasRole(Member member, Role role) {
+		return ((MemberImpl) member).getRoleSet().contains(role);
 	}
 
 	public static boolean isValidUrl(String url) {

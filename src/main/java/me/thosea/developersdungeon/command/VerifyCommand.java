@@ -30,7 +30,7 @@ public class VerifyCommand implements CommandHandler {
 					.setEphemeral(true)
 					.queue();
 			return;
-		} else if(!member.getRoles().contains(requiredRole) && !Utils.isAdmin(member)) {
+		} else if(!Utils.hasRole(member, requiredRole) && !Utils.isAdmin(member)) {
 			event.reply("You don't have permission to do that!")
 					.setEphemeral(true)
 					.queue();
@@ -40,7 +40,7 @@ public class VerifyCommand implements CommandHandler {
 		Member target = event.getOption("target", OptionMapping::getAsMember);
 		if(target == null) {
 			event.reply("Invalid user!").setEphemeral(true).queue();
-		} else if(target.getRoles().contains(verifiedRole)) {
+		} else if(Utils.hasRole(member, verifiedRole)) {
 			event.reply(target.getAsMention() + " is already verified!")
 					.setEphemeral(true)
 					.setAllowedMentions(List.of())

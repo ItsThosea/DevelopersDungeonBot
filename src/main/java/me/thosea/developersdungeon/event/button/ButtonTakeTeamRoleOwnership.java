@@ -7,6 +7,7 @@ import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.internal.entities.MemberImpl;
 
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class ButtonTakeTeamRoleOwnership implements ButtonHandler {
 				return;
 			}
 
-			for(Role role : member.getRoles()) {
+			for(Role role : ((MemberImpl) member).getRoleSet()) {
 				if(TeamRoleUtils.isTeamRole(role) && role.getIdLong() != pair.baseRole().getIdLong()) {
 					event.reply("You're on a different team. Leave that one first.")
 							.setEphemeral(true)

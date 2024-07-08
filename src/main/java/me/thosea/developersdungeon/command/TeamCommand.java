@@ -409,8 +409,8 @@ public class TeamCommand implements CommandHandler {
 		} else if(target.equals(member)) {
 			event.reply("You can't kick yourself, use /team leave instead.").setEphemeral(true).queue();
 			return;
-		} else if(!target.getRoles().contains(pair.baseRole())) {
-			event.reply("They aren't a part of your team role.").setEphemeral(true).queue();
+		} else if(!Utils.hasRole(target, pair.baseRole())) {
+			event.reply("They aren't a part of your team!").setEphemeral(true).queue();
 			return;
 		}
 
