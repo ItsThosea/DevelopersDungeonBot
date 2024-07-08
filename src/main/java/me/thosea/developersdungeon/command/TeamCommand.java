@@ -39,7 +39,7 @@ import java.util.function.Consumer;
 public class TeamCommand implements CommandHandler {
 	@Override
 	public SlashCommandData makeCommandData() {
-		return Commands.slash("team", "Make or break (or even modify) a team role and its color.")
+		return Commands.slash("team", "Make, break or even modify a team role and its settings.")
 				.addSubcommandGroups(new SubcommandGroupData("settings", "Your team's settings.")
 						.addSubcommands(new SubcommandData("mentionable", "Change whether your team can be mentioned")
 								.addOption(OptionType.BOOLEAN, "value", "Whether your team can be pinged", true))
@@ -208,7 +208,7 @@ public class TeamCommand implements CommandHandler {
 			return;
 		}
 
-		event.reply("Are you sure you want to delete your team role?")
+		event.reply("Are you sure you want to delete your team?")
 				.setEphemeral(true)
 				.setActionRow(Button.danger(ButtonHandler.ID_DELETE_TEAM_ROLE, "Delete"))
 				.queue();
@@ -528,47 +528,38 @@ public class TeamCommand implements CommandHandler {
 
 		LongSet cooldowns = requestCooldowns.get(member.getIdLong());
 		if(cooldowns != null && cooldowns.contains(target.getIdLong())) {
-			event.reply("You've already made a request to this person in the last 30 seconds.")
-					.setEphemeral(true)
-					.queue();
+			event.reply("You've already made a request to this person in the last minute!").setEphemeral(true).queue();
 			return;
 		}
 
-		requestCooldowns.computeIfAbsent(member.getIdLong(), i_ -> new
-						LongOpenHashSet())
-						.
-				add(target.getIdLong());
+		if(!Utils.isAdmin(member)) {
+			requestCooldowns
+					.computeIfAbsent(member.getIdLong(), i_ -> new LongOpenHashSet())
+					.add(target.getIdLong());
+		}
 
-		Utils.logMinor("%s made team role %s request to %s for team %s",
-				member,
-				isTransfer ? "transfer" : "invite",
-				target, pair.baseRole());
+		Utils.logMinor("%s made team %s request to %s for team %s", member, isTransfer ? "transfer" : "invite", target, pair.baseRole());
 
-		long deleteTime = (System.currentTimeMillis() + 30 * 1000) / 1000L;
-		event.reply(String.format(
-						inviteMsg + "\n*(this message will auto delete in <t:" + deleteTime + ":R>)*",
-						target.getAsMention(),
-						pair.baseRole(),
-						member.getAsMention()
-				))
-						.
-				setAllowedMentions(List.of(MentionType.USER))
-						.
-				setActionRow(Button.success(
-						button + "-" + target.getId()
-								+ "-" + member.getId()
-								+ "-" + pair.baseRole().
-								getId(),
-						isTransfer ? "Take Ownership" : "Join"))
-						.
-				queue(msg ->
-				{
-					Utils.doLater(TimeUnit.SECONDS, 30, () -> {
+		event.reply(inviteMsg.formatted(target.getAsMention(), pair.baseRole(), member.getAsMention()))
+				.setAllowedMentions(List.of(MentionType.USER))
+				.setActionRow(
+						Button.success(
+								button + "-" + target.getId()
+										+ "-" + member.getId()
+										+ "-" + pair.baseRole().getId(),
+								isTransfer ? "Take Ownership" : "Join"),
+						Button.secondary(
+								ButtonHandler.ID_DENY_TEAM_REQUEST
+										+ "-" + (isTransfer ? "transfer" : "invite")
+										+ "-" + target.getId()
+										+ "-" + member.getId(),
+								"Cancel request"))
+				.queue(msg -> {
+					Utils.doLater(TimeUnit.SECONDS, 60, () -> {
 						requestCooldowns.computeIfPresent(member.getIdLong(), (i_, set) -> {
 							set.remove(target.getIdLong());
 							return set.isEmpty() ? null : set;
 						});
-						msg.deleteOriginal().queue(i_ -> {}, err -> {});
 					});
 				});
 	}

@@ -2,6 +2,7 @@ package me.thosea.developersdungeon.event.button;
 
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.util.TeamRoleUtils;
+import me.thosea.developersdungeon.util.TeamRoleUtils.TeamRolePair;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -25,12 +26,17 @@ public class ButtonJoinTeamRole implements ButtonHandler {
 		} else if(!args[0].equals(member.getId())) {
 			event.reply("This request isn't for you.").setEphemeral(true).queue();
 			return;
-		} else if(TeamRoleUtils.hasTeamRole(member)) {
-			event.reply("You're in a team!").setEphemeral(true).queue();
-			return;
 		}
 
 		long roleId = Long.parseLong(args[2]);
+		TeamRolePair pair = TeamRoleUtils.getTeamRoles(member);
+
+		if(pair.baseRole() != null) {
+			String word = roleId == pair.baseRole().getIdLong() ? "the" : "a";
+			event.reply("You're already in " + word + " team!").setEphemeral(true).queue();
+			return;
+		}
+
 		Role role = Main.guild.getRoleById(roleId);
 
 		if(role == null) {
