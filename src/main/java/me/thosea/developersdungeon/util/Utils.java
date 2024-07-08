@@ -121,14 +121,20 @@ public final class Utils {
 	}
 
 	public static Color parseColor(String colorStr, SlashCommandInteraction event) {
+		colorStr = colorStr.replaceAll("\\s", "");
 		if(colorStr.equalsIgnoreCase("random")) {
 			var random = ThreadLocalRandom.current();
 			return new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
 		}
 
 		try {
-			String cleanedString = colorStr.replaceAll("\\s", "");
-			String[] rgbValues = cleanedString.split(",");
+			return Color.decode(colorStr);
+		} catch(NumberFormatException e) {
+			// not valid hex, try RGB
+		}
+
+		try {
+			String[] rgbValues = colorStr.split(",");
 			if(rgbValues.length > 3) {
 				throw new Exception();
 			}
@@ -137,7 +143,7 @@ public final class Utils {
 			int b = Integer.parseInt(rgbValues[2]);
 			return new Color(r, g, b);
 		} catch(Exception e) {
-			event.reply("Invalid color. Format: R,G,B (spaces are ignored, e.g. 255, 64, 100)\n" +
+			event.reply("Invalid color. Must be a hex code or R,G,B (spaces are ignored, e.g. 255, 64, 100)\n" +
 							"*(Protip: use https://g.co/kgs/gGWjRYR or type \"random\" for a random color)*")
 					.setEphemeral(true)
 					.queue();
@@ -150,7 +156,8 @@ public final class Utils {
 	}
 
 	public static String colorToString(Color color) {
-		return "(" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ")";
+		String hex = "#" + Integer.toHexString(color.getRGB()).substring(2);
+		return hex + " (" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ")";
 	}
 
 	public static void loadResource(String name, StreamHandler handler) {
