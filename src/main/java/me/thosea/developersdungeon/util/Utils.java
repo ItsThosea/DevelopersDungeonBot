@@ -122,11 +122,15 @@ public final class Utils {
 		return args;
 	}
 
+	public static Color randomColor() {
+		var random = ThreadLocalRandom.current();
+		return new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+	}
+
 	public static Color parseColor(String colorStr, SlashCommandInteraction event) {
 		colorStr = colorStr.replaceAll("\\s", "");
 		if(colorStr.equalsIgnoreCase("random")) {
-			var random = ThreadLocalRandom.current();
-			return new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
+			return randomColor();
 		}
 
 		try {
