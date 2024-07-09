@@ -1,4 +1,4 @@
-package me.thosea.developersdungeon.event.button;
+package me.thosea.developersdungeon.button;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;

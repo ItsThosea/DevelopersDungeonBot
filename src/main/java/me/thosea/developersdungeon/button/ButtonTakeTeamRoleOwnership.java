@@ -1,4 +1,4 @@
-package me.thosea.developersdungeon.event.button;
+package me.thosea.developersdungeon.button;
 
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.util.TeamRoleUtils;
