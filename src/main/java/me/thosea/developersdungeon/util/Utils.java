@@ -157,6 +157,11 @@ public final class Utils {
 		return ((MemberImpl) member).getRoleSet().contains(role);
 	}
 
+	public static boolean hasRole(Member member, long roleId) {
+		Role role = Main.guild.getRoleById(roleId);
+		return role != null && hasRole(member, role);
+	}
+
 	public static boolean isValidUrl(String url) {
 		return url.length() <= MessageEmbed.URL_MAX_LENGTH && EmbedBuilder.URL_PATTERN.matcher(url).matches();
 	}

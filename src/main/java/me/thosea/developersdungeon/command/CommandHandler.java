@@ -27,7 +27,8 @@ public interface CommandHandler {
 				new VerifyCommand(),
 				new UnverifyCommand(),
 				new ArchiveCommand(),
-				new UnarchiveCommand()
+				new UnarchiveCommand(),
+				new UnverifiedCommand()
 		);
 		List<SlashCommandData> result = new ArrayList<>(handlers.size());
 
