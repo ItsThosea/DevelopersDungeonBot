@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.internal.entities.MemberImpl;
 
 public class AutoReactionListener extends ListenerAdapter {
 	private static final Emoji YES = Emoji.fromUnicode("U+2705");
@@ -51,8 +50,8 @@ public class AutoReactionListener extends ListenerAdapter {
 			});
 		} else {
 			if(!isVerifiedChannel) return;
-			if(hasRole(author, Roles.VERIFIED)) return;
-			if(hasRole(author, Roles.STAFF)) return;
+			if(Utils.hasRole(author, Roles.VERIFIED)) return;
+			if(Utils.hasRole(author, Roles.STAFF)) return;
 			if(Utils.isAdmin(author)) return;
 		}
 
@@ -78,7 +77,7 @@ public class AutoReactionListener extends ListenerAdapter {
 				return;
 			}
 
-			if(!hasRole(member, Roles.STAFF) && !Utils.isAdmin(member)) {
+			if(!Utils.hasRole(member, Roles.STAFF) && !Utils.isAdmin(member)) {
 				if(isYes || isNo) {
 					revertReaction(event);
 				}
@@ -107,11 +106,5 @@ public class AutoReactionListener extends ListenerAdapter {
 		event.retrieveMessage().queue(msg -> {
 			msg.removeReaction(event.getEmoji(), event.getUser()).queue();
 		}, err -> {});
-	}
-
-	private boolean hasRole(Member member, long id) {
-		return ((MemberImpl) member).getRoleSet().stream().anyMatch(role -> {
-			return role.getIdLong() == id;
-		});
 	}
 }
