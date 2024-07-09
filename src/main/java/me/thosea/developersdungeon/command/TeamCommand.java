@@ -4,7 +4,7 @@ import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import me.thosea.developersdungeon.Main;
-import me.thosea.developersdungeon.event.button.ButtonHandler;
+import me.thosea.developersdungeon.button.ButtonHandler;
 import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.TeamRoleUtils;
 import me.thosea.developersdungeon.util.TeamRoleUtils.TeamRolePair;

@@ -1,7 +1,7 @@
 package me.thosea.developersdungeon.command;
 
 import me.thosea.developersdungeon.Main;
-import me.thosea.developersdungeon.event.button.ButtonHandler;
+import me.thosea.developersdungeon.button.ButtonHandler;
 import me.thosea.developersdungeon.util.Constants.Categories;
 import me.thosea.developersdungeon.util.ForumUtils;
 import me.thosea.developersdungeon.util.PChannelUtils;

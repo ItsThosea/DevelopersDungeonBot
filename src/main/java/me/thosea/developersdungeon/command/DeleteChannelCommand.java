@@ -1,6 +1,6 @@
 package me.thosea.developersdungeon.command;
 
-import me.thosea.developersdungeon.event.button.ButtonHandler;
+import me.thosea.developersdungeon.button.ButtonHandler;
 import me.thosea.developersdungeon.util.PChannelUtils;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Member;

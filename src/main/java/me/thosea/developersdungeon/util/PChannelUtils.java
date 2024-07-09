@@ -1,7 +1,7 @@
 package me.thosea.developersdungeon.util;
 
 import me.thosea.developersdungeon.Main;
-import me.thosea.developersdungeon.event.button.ButtonHandler;
+import me.thosea.developersdungeon.button.ButtonHandler;
 import me.thosea.developersdungeon.util.Constants.Categories;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
