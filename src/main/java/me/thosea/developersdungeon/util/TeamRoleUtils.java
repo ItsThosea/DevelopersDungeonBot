@@ -31,7 +31,17 @@ public final class TeamRoleUtils {
 			return false;
 		} else {
 			name = name.toLowerCase(Locale.ENGLISH);
-			return !name.contains("owner");
+			if(name.contains("owner")) {
+				return false;
+			}
+
+			for(Role role : Main.guild.getRoles()) {
+				if(role.getName().equalsIgnoreCase(name)) {
+					return false;
+				}
+			}
+
+			return true;
 		}
 	}
 

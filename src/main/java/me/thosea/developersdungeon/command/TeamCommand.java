@@ -139,7 +139,7 @@ public class TeamCommand implements CommandHandler {
 
 		String name = event.getOption("name", OptionMapping::getAsString);
 		if(!TeamRoleUtils.isValidName(name)) {
-			event.reply("Invalid name!").setEphemeral(true).queue();
+			event.reply("Invalid name or it duplicates another role!").setEphemeral(true).queue();
 			return;
 		}
 
@@ -247,7 +247,7 @@ public class TeamCommand implements CommandHandler {
 
 		String name = event.getOption("name", OptionMapping::getAsString);
 		if(!TeamRoleUtils.isValidName(name)) {
-			event.reply("Invalid name!").setEphemeral(true).queue();
+			event.reply("Invalid name or it duplicates another role!").setEphemeral(true).queue();
 			return;
 		}
 
