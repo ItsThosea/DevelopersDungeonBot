@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'me.thosea'
-version = '1.2.0'
+version = '1.2.0-b'
 description = 'DevelopersDungeon'
 
 repositories {
