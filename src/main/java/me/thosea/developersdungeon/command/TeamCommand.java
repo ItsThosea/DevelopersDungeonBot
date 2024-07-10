@@ -11,7 +11,10 @@ import me.thosea.developersdungeon.util.TeamRoleUtils.TeamRolePair;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.IMentionable;
+import net.dv8tion.jda.api.entities.Icon;
+import net.dv8tion.jda.api.entities.Icon.IconType;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.entities.Message.MentionType;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.InteractionHook;
@@ -25,6 +28,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +50,10 @@ public class TeamCommand implements CommandHandler {
 						.addSubcommands(new SubcommandData("color", "Change your team color")
 								.addOption(OptionType.STRING, "color", "Color (hex, R,G,B or \"random\")", true))
 						.addSubcommands(new SubcommandData("rename", "Rename your team")
-								.addOption(OptionType.STRING, "name", "New role name", true)))
+								.addOption(OptionType.STRING, "name", "New role name", true))
+						.addSubcommands(new SubcommandData("icon", "Change your team role icon")
+								.addOption(OptionType.ATTACHMENT, "icon", "New role icon", true))
+						.addSubcommands(new SubcommandData("removeicon", "Remove your team role icon ")))
 				.addSubcommands(new SubcommandData("create", "Make a new team")
 						.addOption(OptionType.STRING, "name", "Role Name (you can change this later)", true)
 						.addOption(OptionType.STRING, "color", "Color (can be changed later, hex, R,G,B or \"random\")"))
@@ -75,7 +82,14 @@ public class TeamCommand implements CommandHandler {
 		}
 
 		if("settings".equals(event.getSubcommandGroup())) {
-			handleSettings(member, event);
+			switch(event.getSubcommandName()) {
+				case "mentionable" -> handleMentionable(member, event);
+				case "rename" -> handleRename(member, event);
+				case "color" -> handleSetColor(member, event);
+				case "icon" -> handleIcon(member, event);
+				case "removeicon" -> handleRemoveIcon(member, event);
+				case null, default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
+			}
 			return;
 		}
 
@@ -98,20 +112,11 @@ public class TeamCommand implements CommandHandler {
 		}
 	}
 
-	private void handleSettings(Member member, SlashCommandInteraction event) {
-		switch(event.getSubcommandName()) {
-			case "mentionable" -> handleMentionable(member, event);
-			case "rename" -> handleRename(member, event);
-			case "color" -> handleSetColor(member, event);
-			case null, default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
-		}
-	}
-
 	private void handleMentionable(Member member, SlashCommandInteraction event) {
 		TeamRolePair rolePair = TeamRoleUtils.getTeamRoles(member);
 
 		if(rolePair.eitherNull()) {
-			event.reply("You aren't an owner of a team.")
+			event.reply("You aren't an owner of a team!")
 					.setEphemeral(true)
 					.queue();
 			return;
@@ -202,7 +207,7 @@ public class TeamCommand implements CommandHandler {
 		TeamRolePair rolePair = TeamRoleUtils.getTeamRoles(member);
 
 		if(rolePair.eitherNull()) {
-			event.reply("You aren't an owner of a team.")
+			event.reply("You aren't an owner of a team!")
 					.setEphemeral(true)
 					.queue();
 			return;
@@ -236,7 +241,7 @@ public class TeamCommand implements CommandHandler {
 	private void handleRename(Member member, SlashCommandInteraction event) {
 		TeamRolePair rolePair = TeamRoleUtils.getTeamRoles(member);
 		if(rolePair.eitherNull()) {
-			event.reply("You aren't an owner of a team.").setEphemeral(true).queue();
+			event.reply("You aren't an owner of a team!").setEphemeral(true).queue();
 			return;
 		}
 
@@ -252,16 +257,15 @@ public class TeamCommand implements CommandHandler {
 				rolePair.baseRole().getName(),
 				name);
 
-
 		rolePair.baseRole().getManager().setName(name).queue();
 		rolePair.ownerRole().getManager().setName(name + " (Owner)").queue();
-		event.reply("Your team has been renamed.").queue();
+		event.reply("Your team has been renamed to " + name + ".").queue();
 	}
 
 	private void handleSetColor(Member member, SlashCommandInteraction event) {
 		TeamRolePair rolePair = TeamRoleUtils.getTeamRoles(member);
 		if(rolePair.eitherNull()) {
-			event.reply("You aren't an owner of a team.").setEphemeral(true).queue();
+			event.reply("You aren't an owner of a team!").setEphemeral(true).queue();
 			return;
 		}
 
@@ -280,6 +284,90 @@ public class TeamCommand implements CommandHandler {
 						.build())
 				.queue();
 		Utils.logMinor("%s changed team color of %s to %s", member, rolePair.baseRole(), colorStr);
+	}
+
+	private void handleIcon(Member member, SlashCommandInteraction event) {
+		if(TeamRoleUtils.getTeamRoles(member).eitherNull()) {
+			event.reply("You aren't an owner of a team!").setEphemeral(true).queue();
+			return;
+		}
+
+		Attachment attachment = event.getOption("icon", OptionMapping::getAsAttachment);
+		assert attachment != null;
+
+		IconType type;
+		String extension = attachment.getFileExtension();
+		if(extension == null || ((type = IconType.fromExtension(extension)) == IconType.UNKNOWN)) {
+			event.reply("Invalid file extension.").setEphemeral(true).queue();
+			return;
+		}
+
+		if(attachment.getSize() >= 41943040) { // 40 MiB
+			event.reply("That file's too big!").setEphemeral(true).queue();
+			return;
+		}
+
+		event.deferReply().queue(hook -> {
+			attachment.getProxy().download().exceptionally(err -> {
+				hook.editOriginal("Failed to download the file. Was it deleted?").queue();
+				return null;
+			}).thenApply(stream -> {
+				// recheck roles
+				TeamRolePair pair = TeamRoleUtils.getTeamRoles(member);
+				if(pair.eitherNull()) {
+					hook.editOriginal("You aren't an owner of a team!").queue();
+					return stream;
+				}
+
+				try {
+					var icon = Icon.from(stream, type);
+
+					pair.baseRole().getManager().setIcon(icon)
+							.and(pair.ownerRole().getManager().setIcon(icon))
+							.queue(i_ -> {
+								hook.editOriginalEmbeds(new EmbedBuilder()
+												.setColor(pair.baseRole().getColorRaw())
+												.setThumbnail(attachment.getUrl())
+												.setTitle("Your team role icon has been changed.")
+												.build())
+										.setAllowedMentions(List.of())
+										.queue();
+
+								Utils.logMinor("%s changed their team %s's role icon to %s",
+										member, pair.baseRole(),
+										attachment.getUrl());
+							}, err -> {
+								hook.editOriginal("Failed to set icon. Is it smaller than 64x64 or over 256KB?" +
+												"\n*(Protip: use https://discordicon.com/icons-editor)*")
+										.setSuppressEmbeds(true)
+										.queue();
+							});
+				} catch(IOException e) {
+					hook.editOriginal("Failed to read image.").queue();
+					return stream;
+				}
+
+				return stream;
+			});
+		});
+	}
+
+	private void handleRemoveIcon(Member member, SlashCommandInteraction event) {
+		TeamRolePair pair = TeamRoleUtils.getTeamRoles(member);
+		if(pair.eitherNull()) {
+			event.reply("You aren't an owner of a team!").setEphemeral(true).queue();
+			return;
+		} else if(pair.baseRole().getIcon() == null) {
+			event.reply("Your team role doesn't have an icon!").setEphemeral(true).queue();
+			return;
+		}
+
+		pair.baseRole().getManager().setIcon((Icon) null)
+				.and(pair.ownerRole().getManager().setIcon((Icon) null))
+				.queue();
+		event.reply("Your team role icon has been removed.").queue();
+
+		Utils.logMinor("%s removed their team %s's role icon", member, pair.baseRole());
 	}
 
 	private void handleInfo(Member member, SlashCommandInteraction event) {
@@ -350,6 +438,10 @@ public class TeamCommand implements CommandHandler {
 		embed.appendDescription("\nBase Role: " + baseRole.getAsMention());
 		embed.appendDescription("\nOwner Role: " + ownerRole.getAsMention());
 
+		if(baseRole.getIcon() != null) {
+			embed.setThumbnail(baseRole.getIcon().getIconUrl());
+		}
+
 		BiConsumer<List<Member>, Throwable> ownerFindHandler = (ownerList, err1) -> {
 			if(err1 != null || ownerList == null || ownerList.isEmpty()) {
 				embed.appendDescription("\nOwner: ???");
@@ -398,7 +490,7 @@ public class TeamCommand implements CommandHandler {
 	private void handleKick(Member member, SlashCommandInteraction event) {
 		TeamRolePair pair = TeamRoleUtils.getTeamRoles(member);
 		if(pair.eitherNull()) {
-			event.reply("You aren't an owner of a team.").setEphemeral(true).queue();
+			event.reply("You aren't an owner of a team!").setEphemeral(true).queue();
 			return;
 		}
 
