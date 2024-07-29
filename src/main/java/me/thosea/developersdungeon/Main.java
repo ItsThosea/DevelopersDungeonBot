@@ -96,7 +96,7 @@ public final class Main {
 
 	private static void scheduleCurseforgePing() {
 		var channel = (MessageChannel) guild.getChannelCache().getElementById(Channels.ANNOUNCEMENTS_CHANNEL);
-		if(channel == null) {
+		if(channel == null || true) {
 			System.out.println("No valid announcements channel, won't schedule curseforge project ping.");
 			return;
 		}
