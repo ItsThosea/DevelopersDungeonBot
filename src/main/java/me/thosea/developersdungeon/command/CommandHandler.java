@@ -28,7 +28,8 @@ public interface CommandHandler {
 				new UnverifyCommand(),
 				new ArchiveCommand(),
 				new UnarchiveCommand(),
-				new UnverifiedCommand()
+				new UnverifiedCommand(),
+				new InviteLeaderboardCommand()
 		);
 		List<SlashCommandData> result = new ArrayList<>(handlers.size());
 
