@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'me.thosea'
-version = '1.2.0-c-temp'
+version = '1.2.0-c'
 description = 'DevelopersDungeon'
 
 repositories {
@@ -21,6 +21,7 @@ dependencies {
         exclude group: 'club.minnced', module: "opus-java"
     }
     api 'it.unimi.dsi:fastutil-core:8.5.13'
+    api 'org.slf4j:slf4j-simple:2.0.13'
 }
 
 processResources {

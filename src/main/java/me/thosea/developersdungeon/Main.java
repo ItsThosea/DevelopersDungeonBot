@@ -22,7 +22,7 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -31,6 +31,10 @@ import okhttp3.OkHttpClient;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -95,14 +99,19 @@ public final class Main {
 	}
 
 	private static void scheduleCurseforgePing() {
-		var channel = (MessageChannel) guild.getChannelCache().getElementById(Channels.ANNOUNCEMENTS_CHANNEL);
-		if(channel == null || true) {
+		GuildMessageChannel channel = guild.getChannelById(GuildMessageChannel.class, Channels.ANNOUNCEMENTS_CHANNEL);
+		if(channel == null) {
 			System.out.println("No valid announcements channel, won't schedule curseforge project ping.");
 			return;
 		}
 
-		long time = Utils.getNextCurseforgePingTime() - System.currentTimeMillis();
-		Utils.doLater(TimeUnit.MILLISECONDS, time, () -> {
+		long time = Utils.getNextCurseforgePingTime();
+
+		LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault());
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy 'at' HH:mm");
+		Utils.logMinor("Next CF payout ping scheduled at %s", dateTime.format(formatter));
+
+		Utils.doLater(TimeUnit.MILLISECONDS, time - System.currentTimeMillis(), () -> {
 			String msg = """
 					**We're close to the end of the month!** Don't forget to cash out the CurseForge rewards before the month ends.
 					
