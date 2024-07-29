@@ -17,6 +17,9 @@ import net.dv8tion.jda.internal.entities.MemberImpl;
 
 import java.awt.Color;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -48,18 +51,23 @@ public final class Utils {
 	}
 
 	public static long getNextCurseforgePingTime() {
-		// var date = LocalDate.now();
-		//
-		// if(date.minusDays())
-		//
-		// 		.plusMonths(1)
-		// 		.withDayOfMonth(1)
-		// 		.minusDays(3) // 2nd last day of the month
-		// 		.atTime(12, 0)
-		// 		.atZone(ZoneOffset.UTC) // at 12 PM UTC
-		// 		.toInstant()
-		// 		.toEpochMilli();
-		return -1;
+		var date = ZonedDateTime.now();
+		var target = LocalDate.now()
+				.atTime(19, 0)
+				.atZone(ZoneOffset.UTC)
+				.plusMonths(1)
+				.withDayOfMonth(1)
+				.minusDays(2);
+
+		if(date.compareTo(target) >= 0) {
+			date = target.plusMonths(2)
+					.withDayOfMonth(1)
+					.minusDays(2);
+		} else {
+			date = target;
+		}
+
+		return date.toInstant().toEpochMilli();
 	}
 
 	public static void logMinor(String message, Object... args) {
