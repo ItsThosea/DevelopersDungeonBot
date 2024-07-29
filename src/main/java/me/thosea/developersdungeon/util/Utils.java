@@ -123,6 +123,8 @@ public final class Utils {
 					str += " (@" + member.getUser().getName() + ")";
 				} else if(args[i] instanceof Channel channel) {
 					str += " (#" + channel.getName() + ")";
+				} else if(args[i] instanceof Role role) {
+					str += " (@" + role.getName() + ")";
 				}
 
 				args[i] = str;
