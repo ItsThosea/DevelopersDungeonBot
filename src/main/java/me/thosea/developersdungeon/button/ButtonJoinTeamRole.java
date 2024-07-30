@@ -45,10 +45,11 @@ public class ButtonJoinTeamRole implements ButtonHandler {
 		}
 
 		Main.guild.addRoleToMember(member, role).queue();
-		event.reply(member.getAsMention() + " joined team role " + role.getAsMention() + "!")
+
+		event.deferEdit().queue(msg -> msg.deleteOriginal().queue());
+		event.getChannel().sendMessage(member.getAsMention() + " joined team role " + role.getAsMention() + "!")
 				.setAllowedMentions(List.of())
 				.queue();
-		event.getMessage().delete().queue();
 
 		Utils.logMinor("%s joined team %s as invited by %s", member, role, "<@" + args[1] + ">");
 	}
