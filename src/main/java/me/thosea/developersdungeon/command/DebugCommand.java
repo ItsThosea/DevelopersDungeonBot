@@ -17,6 +17,8 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class DebugCommand implements CommandHandler {
 	@Override
@@ -36,8 +38,16 @@ public class DebugCommand implements CommandHandler {
 		}
 
 		int opcode = event.getOption("opcode", OptionMapping::getAsInt);
+
 		String argsRaw = event.getOption("args", OptionMapping::getAsString);
-		String[] args = argsRaw == null ? new String[0] : argsRaw.trim().split(" ");
+		String[] args;
+		if(argsRaw == null) {
+			args = new String[0];
+		} else {
+			args = Stream.of(argsRaw.split(" "))
+					.filter(Predicate.not(String::isBlank))
+					.toArray(String[]::new);
+		}
 
 		if(opcode == 0) {
 			handleOpcode0(event);
