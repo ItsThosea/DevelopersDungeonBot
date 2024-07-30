@@ -61,7 +61,7 @@ public class DebugCommand implements CommandHandler {
 			event.deferReply()
 					.setEphemeral(true)
 					.queue(hook -> Main.guild.retrieveInvites().queue(list -> {
-						handleOpcode3_4(hook, list);
+						handleOpcode3(hook, list);
 					}));
 		} else {
 			event.reply("""
@@ -70,6 +70,7 @@ public class DebugCommand implements CommandHandler {
 							1: Delete commission request forum post
 							2: Toggle role (user, role)
 							3: List invites (ephemeral)
+							4: List ping responses
 							""")
 					.setEphemeral(true)
 					.queue();
@@ -146,7 +147,7 @@ public class DebugCommand implements CommandHandler {
 		}, err -> hook.editOriginal("No person found").queue());
 	}
 
-	private static void handleOpcode3_4(InteractionHook hook, List<Invite> list) {
+	private static void handleOpcode3(InteractionHook hook, List<Invite> list) {
 		InviteLeaderboardCommand.makeResponse(hook, list);
 	}
 }
