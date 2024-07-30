@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
+import java.util.List;
 import java.util.Locale;
 
 public class PingResponseMessageListener extends ListenerAdapter {
@@ -18,7 +19,15 @@ public class PingResponseMessageListener extends ListenerAdapter {
 
 		for(PingResponse response : PingResponse.PIPELINE) {
 			if(response.matches(content) == response.mustMatch()) {
-				response.modifyMessage(message.reply(response.getResponse(content))).queue();
+				if(response.mustMatch()
+						&& (content.contains("say") || content.contains("send"))
+						&& content.contains("if")) {
+					message.reply(content.contains("say") ? "Say whaaat?" : "Send whaaat?").queue();
+				} else {
+					message.reply(response.getResponse(content)
+									.replace("$cdn/", "https://devsdungeon-cdn.pages.dev/pings/"))
+							.setAllowedMentions(List.of()).queue();
+				}
 				break;
 			}
 		}
