@@ -56,8 +56,9 @@ public class ButtonTakeTeamRoleOwnership implements ButtonHandler {
 					member.getAsMention()
 			);
 
-			event.reply(log).setAllowedMentions(List.of()).queue();
-			event.getMessage().delete().queue();
+			event.deferEdit().queue(msg -> msg.deleteOriginal().queue());
+			event.getChannel().sendMessage(log).setAllowedMentions(List.of()).queue();
+
 			Utils.logMinor(log);
 		}, err -> {
 			event.reply("No longer valid.").setEphemeral(true).queue();
