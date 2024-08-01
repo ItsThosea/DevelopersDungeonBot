@@ -21,6 +21,9 @@ public class ButtonPChannelHelp implements ButtonHandler {
 									/renamechannel - Rename this channel.
 									/archivechannel - Move your channel to the archived category.
 									/unarchivechannel - Move your channel back to the private rooms category.
+									/setlinkedcommission - Set the commission thread linked in the bot message.
+									/unlinkcommission - Unlink the commission thread from the bot message.
+									/findstatusmessage - Find and display the bot status message.
 									To add or remove people or teams from accessing this channel, use the discord channel settings menu.
 									""")
 						.setColor(new Color(50, 168, 82))
