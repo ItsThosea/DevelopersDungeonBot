@@ -10,16 +10,19 @@ import net.dv8tion.jda.api.entities.channel.attribute.ICategorizableChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.Color;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public final class PChannelUtils {
 	private PChannelUtils() {}
 
-	public static MessageEmbed makeInitEmbed(String user) {
+	public static MessageEmbed makeEmbed(String user, @Nullable String channelLink) {
 		return new EmbedBuilder()
 				.appendDescription("The legendary beginning of " + user + "'s private channel.")
+				.appendDescription(channelLink == null ? "" : "\nCommission: " + channelLink)
 				.setColor(new Color(252, 198, 3))
 				.build();
 	}
@@ -41,7 +44,7 @@ public final class PChannelUtils {
 		}
 	}
 
-	public static void getOwner(MessageChannel channel, Consumer<String> handler) {
+	public static void getMessageAndOwner(MessageChannel channel, BiConsumer<Message, String> handler) {
 		channel.getHistoryFromBeginning(3).queue(history -> {
 			for(Message message : history.getRetrievedHistory()) {
 				if(!message.getAuthor().equals(Main.jda.getSelfUser())) continue;
@@ -54,12 +57,20 @@ public final class PChannelUtils {
 				if(button.getId() == null) continue;
 				if(!button.getId().startsWith(ButtonHandler.ID_PCHANNEL_HELP)) continue;
 
-				handler.accept(button.getId().substring(ButtonHandler.ID_PCHANNEL_HELP.length() + 1));
+				handler.accept(message, button.getId().substring(ButtonHandler.ID_PCHANNEL_HELP.length() + 1));
 				return;
 			}
 
-			handler.accept(null);
+			handler.accept(null, null);
 		});
+	}
+
+	public static void getOwner(MessageChannel channel, Consumer<String> handler) {
+		getMessageAndOwner(channel, (a_, owner) -> handler.accept(owner));
+	}
+
+	public static void getBotMessage(MessageChannel channel, Consumer<Message> handler) {
+		getMessageAndOwner(channel, (msg, a_) -> handler.accept(msg));
 	}
 
 }
