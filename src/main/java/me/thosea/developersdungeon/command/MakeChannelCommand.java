@@ -77,7 +77,7 @@ public class MakeChannelCommand implements CommandHandler {
 
 		request.reason(member.getAsMention());
 		request.queue(channel -> {
-			channel.sendMessageEmbeds(PChannelUtils.makeInitEmbed(member.getAsMention()))
+			channel.sendMessageEmbeds(PChannelUtils.makeEmbed(member.getAsMention(), null))
 					.setActionRow(Button.secondary(
 							ButtonHandler.ID_PCHANNEL_HELP + "-" + member.getIdLong(),
 							"Commands"
@@ -111,6 +111,7 @@ public class MakeChannelCommand implements CommandHandler {
 				stateMsg.editMessageEmbeds(
 						stateMsg.getEmbeds().getFirst(),
 						ForumUtils.makeChannelsEmbed(channels)).queue();
+				msg.editMessageEmbeds(PChannelUtils.makeEmbed(member.getAsMention(), thread.getJumpUrl())).queue();
 			});
 		}
 
