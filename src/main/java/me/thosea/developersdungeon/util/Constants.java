@@ -11,26 +11,26 @@ public final class Constants {
 	public static final LongSet ADMINS = idSet("admins");
 
 	public static class Channels {
-		public static final long GENERAL_CHANNEL = id("channels.general");
-		public static final long INFORMATION_CHANNEL = id("channels.information");
+		public static final long GENERAL = id("channels.general");
+		public static final long INFORMATION = id("channels.information");
 
-		public static final long VERIFY_CHANNEL = id("channels.verify");
-		public static final long SUGGESTIONS_CHANNEL = id("channels.suggestions");
+		public static final long VERIFY = id("channels.verify");
+		public static final long SUGGESTIONS = id("channels.suggestions");
 
-		public static final long ANNOUNCEMENTS_CHANNEL = id("channels.announcements");
+		public static final long ANNOUNCEMENTS = id("channels.announcements");
 
-		public static final long MINOR_LOG_CHANNEL = id("channels.minor_log");
-		public static final long MAJOR_LOG_CHANNEL = id("channels.major_log");
-		public static final long CHANNEL_LOG_CHANNEL = id("channels.channel_log");
+		public static final long MINOR_LOG = id("channels.minor_log");
+		public static final long MAJOR_LOG = id("channels.major_log");
+		public static final long CHANNEL_LOG = id("channels.channel_log");
 
-		public static final long BOTS_CHANNEL = id("channels.bots");
+		public static final long BOTS = id("channels.bots");
 
-		public static final long COMMISSIONS_CHANNEL = id("channels.commissions");
+		public static final long COMMISSIONS = id("channels.commissions");
 	}
 
 	public static class Categories {
-		public static final long PRIVATE_CHANNEL_CATEGORY = id("categories.private_channels");
-		public static final long ARCHIVED_CHANNELS_CATEGORY = id("categories.archived_channels");
+		public static final long PRIVATE_CHANNELS = id("categories.private_channels");
+		public static final long ARCHIVED_CHANNELS = id("categories.archived_channels");
 	}
 
 	public static class Messages {

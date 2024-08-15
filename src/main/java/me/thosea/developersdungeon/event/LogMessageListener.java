@@ -23,7 +23,7 @@ public class LogMessageListener extends ListenerAdapter {
 	private boolean logChannel(MessageChannelUnion channel) {
 		if(ForumUtils.isCommissionRequest(channel)) return true;
 		if(PChannelUtils.isPrivateChannel(channel)) return true;
-		if(channel.getIdLong() == Constants.Channels.VERIFY_CHANNEL) return true;
+		if(channel.getIdLong() == Constants.Channels.VERIFY) return true;
 		return false;
 	}
 }

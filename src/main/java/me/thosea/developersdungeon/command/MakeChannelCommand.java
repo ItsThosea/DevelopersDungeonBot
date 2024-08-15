@@ -72,8 +72,8 @@ public class MakeChannelCommand implements CommandHandler {
 		}
 
 		var request = type.equals("text")
-				? Main.guild.createTextChannel(channelName, Main.guild.getCategoryById(Categories.PRIVATE_CHANNEL_CATEGORY))
-				: Main.guild.createVoiceChannel(channelName, Main.guild.getCategoryById(Categories.PRIVATE_CHANNEL_CATEGORY));
+				? Main.guild.createTextChannel(channelName, Main.guild.getCategoryById(Categories.PRIVATE_CHANNELS))
+				: Main.guild.createVoiceChannel(channelName, Main.guild.getCategoryById(Categories.PRIVATE_CHANNELS));
 
 		request.reason(member.getAsMention());
 		request.queue(channel -> {

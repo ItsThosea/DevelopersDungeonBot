@@ -34,8 +34,8 @@ public class AutoReactionListener extends ListenerAdapter {
 			return;
 		}
 
-		boolean isVerifiedChannel = id == Channels.VERIFY_CHANNEL;
-		boolean isSuggestionsChannel = id == Channels.SUGGESTIONS_CHANNEL;
+		boolean isVerifiedChannel = id == Channels.VERIFY;
+		boolean isSuggestionsChannel = id == Channels.SUGGESTIONS;
 
 		if(isSuggestionsChannel) {
 			String name = author.getUser().getName();
@@ -64,13 +64,13 @@ public class AutoReactionListener extends ListenerAdapter {
 		if(event.getUserIdLong() == Main.jda.getSelfUser().getIdLong()) return;
 
 		long id = event.getChannel().getIdLong();
-		if(id != Channels.SUGGESTIONS_CHANNEL && id != Channels.VERIFY_CHANNEL) return;
+		if(id != Channels.SUGGESTIONS && id != Channels.VERIFY) return;
 
 		boolean isYes = YES.equals(event.getEmoji());
 		boolean isNo = NO.equals(event.getEmoji());
 
 		event.retrieveMember().queue(member -> {
-			if(id == Channels.SUGGESTIONS_CHANNEL) {
+			if(id == Channels.SUGGESTIONS) {
 				if(!Utils.isAdmin(member) && !isYes && !isNo) {
 					revertReaction(event);
 				}
