@@ -36,7 +36,8 @@ public class EchoCommand implements CommandHandler {
 						.addOption(OptionType.STRING, "author_icon_url", "Author icon URL")
 						.addOption(OptionType.STRING, "color", "Color (hex, R,G,B or \"random\")")
 						.addOption(OptionType.STRING, "footer", "Footer")
-						.addOption(OptionType.STRING, "footer_icon_url", "Footer Icon URL"));
+						.addOption(OptionType.STRING, "footer_icon_url", "Footer icon URL")
+						.addOption(OptionType.STRING, "thumbnail", "Thumbnail icon URL"));
 	}
 
 	@Override
@@ -95,6 +96,7 @@ public class EchoCommand implements CommandHandler {
 		String colorStr = args.apply("color");
 		String footer = args.apply("footer");
 		String footerIconUrl = args.apply("footer_icon_url");
+		String thumbnail = args.apply("thumbnail");
 
 		if(authorUrl != null && !Utils.isValidUrl(authorUrl)) {
 			event.reply("Invalid author URL!").setEphemeral(true).queue();
@@ -105,10 +107,14 @@ public class EchoCommand implements CommandHandler {
 		} else if(footerIconUrl != null && !Utils.isValidUrl(footerIconUrl)) {
 			event.reply("Invalid footer icon URL!").setEphemeral(true).queue();
 			return null;
+		} else if(thumbnail != null && !Utils.isValidUrl(thumbnail)) {
+			event.reply("Invalid thumbnail URL!").setEphemeral(true).queue();
+			return null;
 		}
 
 		builder.setTitle(title);
 		builder.setAuthor(author, authorUrl, authorIconUrl);
+		builder.setThumbnail(thumbnail);
 
 		if(colorStr != null) {
 			Color color = Utils.parseColor(colorStr, event);
