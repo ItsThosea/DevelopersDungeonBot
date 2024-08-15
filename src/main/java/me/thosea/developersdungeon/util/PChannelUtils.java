@@ -30,7 +30,7 @@ public final class PChannelUtils {
 	public static boolean isPrivateChannel(MessageChannel channel) {
 		if(channel instanceof ICategorizableChannel categorizable) {
 			long id = categorizable.getParentCategoryIdLong();
-			return id == Categories.PRIVATE_CHANNEL_CATEGORY || id == Categories.ARCHIVED_CHANNELS_CATEGORY;
+			return id == Categories.PRIVATE_CHANNELS || id == Categories.ARCHIVED_CHANNELS;
 		} else {
 			return false;
 		}
@@ -38,7 +38,7 @@ public final class PChannelUtils {
 
 	public static boolean isArchived(MessageChannel channel) {
 		if(channel instanceof ICategorizableChannel categorizable) {
-			return categorizable.getParentCategoryIdLong() == Categories.ARCHIVED_CHANNELS_CATEGORY;
+			return categorizable.getParentCategoryIdLong() == Categories.ARCHIVED_CHANNELS;
 		} else {
 			return false;
 		}

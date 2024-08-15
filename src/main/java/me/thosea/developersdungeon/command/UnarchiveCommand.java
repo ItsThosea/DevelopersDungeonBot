@@ -39,7 +39,7 @@ public class UnarchiveCommand implements CommandHandler {
 			}
 
 			((ICategorizableChannel) channel).getManager()
-					.setParent(Main.guild.getCategoryById(Categories.PRIVATE_CHANNEL_CATEGORY))
+					.setParent(Main.guild.getCategoryById(Categories.PRIVATE_CHANNELS))
 					.queue();
 
 			hook.editOriginal("Unarchived the channel.").queue();

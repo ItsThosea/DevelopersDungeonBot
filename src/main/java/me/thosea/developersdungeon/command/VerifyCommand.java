@@ -58,8 +58,8 @@ public class VerifyCommand implements CommandHandler {
 		Main.guild.addRoleToMember(target, verifiedRole).queue(i_ -> {
 			if(Main.generalChannel != null) {
 				String msg = "Welcome to Developers Dungeon, " + target.getAsMention() + "!";
-				if(Constants.Channels.INFORMATION_CHANNEL > 0) {
-					msg += " Please check out <#" + Constants.Channels.INFORMATION_CHANNEL + ">!";
+				if(Constants.Channels.INFORMATION > 0) {
+					msg += " Please check out <#" + Constants.Channels.INFORMATION + ">!";
 				}
 
 				Main.generalChannel.sendMessage(msg).queue();

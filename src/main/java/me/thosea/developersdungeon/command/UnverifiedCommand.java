@@ -33,7 +33,7 @@ public class UnverifiedCommand implements CommandHandler {
 					return;
 				}
 
-				var channel = Main.guild.getTextChannelById(Channels.VERIFY_CHANNEL);
+				var channel = Main.guild.getTextChannelById(Channels.VERIFY);
 				if(channel == null) {
 					handleList(hook, list, null, null);
 				} else {
