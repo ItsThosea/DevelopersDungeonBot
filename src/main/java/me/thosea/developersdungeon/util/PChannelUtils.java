@@ -66,11 +66,11 @@ public final class PChannelUtils {
 	}
 
 	public static void getOwner(MessageChannel channel, Consumer<String> handler) {
-		getMessageAndOwner(channel, (a_, owner) -> handler.accept(owner));
+		getMessageAndOwner(channel, (_, owner) -> handler.accept(owner));
 	}
 
 	public static void getBotMessage(MessageChannel channel, Consumer<Message> handler) {
-		getMessageAndOwner(channel, (msg, a_) -> handler.accept(msg));
+		getMessageAndOwner(channel, (msg, _) -> handler.accept(msg));
 	}
 
 }

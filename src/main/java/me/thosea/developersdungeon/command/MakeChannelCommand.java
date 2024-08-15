@@ -140,14 +140,14 @@ public class MakeChannelCommand implements CommandHandler {
 						channel.upsertPermissionOverride(toAdd)
 								.grant(Permission.VIEW_CHANNEL)
 								.queue();
-					}, err -> hook.editOriginal(errorMessage).queue());
+					}, _ -> hook.editOriginal(errorMessage).queue());
 				}
 			}
 		}
 
 		channel.upsertPermissionOverride(member)
 				.grant(Permission.VIEW_CHANNEL, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_WEBHOOKS)
-				.flatMap(i__ -> hook.editOriginal("Made your " + type + " channel > " + channel.getAsMention()))
+				.flatMap(_ -> hook.editOriginal("Made your " + type + " channel > " + channel.getAsMention()))
 				.queue();
 
 		Utils.logChannel("%s made %s channel %s", member, type, channel);
