@@ -23,7 +23,7 @@ public class AutoReactionListener extends ListenerAdapter {
 		if(event.isWebhookMessage()) return;
 
 		Member author = event.getMember();
-		assert author != null; // never true
+		if(author == null) return;
 		if(author.getIdLong() == Main.jda.getSelfUser().getIdLong()) return;
 
 		Message msg = event.getMessage();
