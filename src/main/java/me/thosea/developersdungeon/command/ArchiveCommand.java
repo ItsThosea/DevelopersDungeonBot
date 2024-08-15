@@ -39,7 +39,7 @@ public class ArchiveCommand implements CommandHandler {
 			}
 
 			((ICategorizableChannel) channel).getManager()
-					.setParent(Main.guild.getCategoryById(Categories.ARCHIVED_CHANNELS_CATEGORY))
+					.setParent(Main.guild.getCategoryById(Categories.ARCHIVED_CHANNELS))
 					.queue();
 
 			hook.editOriginal("Archived the channel.").queue();

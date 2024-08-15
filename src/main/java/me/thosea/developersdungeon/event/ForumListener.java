@@ -21,7 +21,7 @@ public class ForumListener extends ListenerAdapter {
 		if(!(event.getChannel() instanceof ThreadChannel channel)) return;
 
 		long parentId = channel.getParentChannel().getIdLong();
-		if(parentId != Constants.Channels.COMMISSIONS_CHANNEL) return;
+		if(parentId != Constants.Channels.COMMISSIONS) return;
 
 		WAITING_FOR_MESSAGE.add(channel.getIdLong());
 		Utils.doLater(TimeUnit.SECONDS, 30, () -> {
