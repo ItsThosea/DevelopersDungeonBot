@@ -130,7 +130,7 @@ public class EchoCommand implements CommandHandler {
 					.setAllowedMentions(List.of())
 					.queue(ourMsg -> {
 						Utils.logMinor("%s used echo (embed) in %s > %s", member, og.getChannel(), ourMsg);
-						og.delete().queue();
+						og.delete().reason("echo command").queue();
 					});
 		};
 	}
@@ -155,7 +155,7 @@ public class EchoCommand implements CommandHandler {
 				.addFiles(uploads)
 				.queue(ourMsg -> {
 					Utils.logMinor("%s used echo (message) in %s > %s", member, og.getChannel(), ourMsg);
-					og.delete().queue();
+					og.delete().reason("echo command").queue();
 				});
 	}
 
