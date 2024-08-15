@@ -59,7 +59,7 @@ public class InviteLeaderboardCommand implements CommandHandler {
 			int uses = invite.getUses();
 			if(uses < 1) continue;
 
-			map.compute(invite.getInviter().getIdLong(), (a_, num) -> {
+			map.compute(invite.getInviter().getIdLong(), (_, num) -> {
 				if(num == null) {
 					return uses;
 				} else {
@@ -90,7 +90,7 @@ public class InviteLeaderboardCommand implements CommandHandler {
 			return;
 		}
 
-		actions.queue(i_ -> {
+		actions.queue(_ -> {
 			StringBuilder builder = new StringBuilder();
 
 			map.long2IntEntrySet()

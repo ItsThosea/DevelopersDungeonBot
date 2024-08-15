@@ -73,7 +73,7 @@ public class ButtonListener extends ListenerAdapter {
 				.setActionRow(buttonFunction.apply(id))
 				.queue(msg -> {
 					Utils.doLater(TimeUnit.SECONDS, 30, () -> {
-						msg.deleteOriginal().queue(i_ -> {}, err -> {});
+						msg.deleteOriginal().queue(_ -> {}, _ -> {});
 						BUTTONS.remove(id);
 					});
 				});

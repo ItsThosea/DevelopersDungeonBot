@@ -51,7 +51,7 @@ public class UnverifyCommand implements CommandHandler {
 					.setAllowedMentions(List.of())
 					.queue();
 		} else {
-			Main.guild.removeRoleFromMember(target, verifiedRole).queue(i_ -> {
+			Main.guild.removeRoleFromMember(target, verifiedRole).queue(_ -> {
 				event.reply("Unverified " + target.getAsMention() + ".")
 						.setEphemeral(true)
 						.setAllowedMentions(List.of())

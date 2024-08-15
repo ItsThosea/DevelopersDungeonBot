@@ -36,13 +36,13 @@ public interface PingResponse {
 			}),
 
 			// -- tiny games start
-			normal("frolic", content -> {
+			normal("frolic", _ -> {
 				frolicState[0] = !frolicState[0];
 				return frolicState[0]
 						? "$cdn/gif/happy.gif"
 						: "$cdn/gif/frolic.gif";
 			}),
-			normal("dancing", content -> {
+			normal("dancing", _ -> {
 				dancingState[0] = !dancingState[0];
 				return dancingState[0]
 						? "$cdn/gif/mario_dance.gif"
@@ -66,7 +66,7 @@ public interface PingResponse {
 			normal("freedom", "$cdn/gif/freedom.gif"),
 			normal("mario sightings", "$cdn/gif/mario_sightings.gif"),
 			normal("fnaf", "$cdn/gif/fnaf.gif"),
-			normal("*dodges*", content -> {
+			normal("*dodges*", _ -> {
 				return ThreadLocalRandom.current().nextFloat() <= 0.25f
 						? "$cdn/gif/dodge_success.gif"
 						: "$cdn/gif/dodge_fail.gif";

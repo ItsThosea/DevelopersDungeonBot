@@ -155,7 +155,7 @@ public class PChannelListener extends ListenerAdapter {
 						handler.accept(member);
 					} else {
 						Main.guild.retrieveMemberById(log.getUserIdLong())
-								.queue(handler, err -> handler.accept(null));
+								.queue(handler, _ -> handler.accept(null));
 					}
 				}
 				return;

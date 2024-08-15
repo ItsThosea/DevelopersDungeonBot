@@ -44,7 +44,7 @@ public class AutoReactionListener extends ListenerAdapter {
 				int count = Integer.parseInt(countMsg.getContentRaw()) + 1;
 				countMsg.editMessage("" + count).queue();
 				msg.createThreadChannel("Suggestion #" + count + " - " + name).queue();
-			}, err -> {
+			}, _ -> {
 				Utils.logMinor("Warning: no suggestion count message in %s", event.getChannel());
 				msg.createThreadChannel("Suggestion - " + name).queue();
 			});
@@ -98,13 +98,13 @@ public class AutoReactionListener extends ListenerAdapter {
 							target.kick().reason("Staff denied verification").queue();
 							Utils.logMinor("%s denied verification for %s, kicking them", member, target);
 						}
-					}, err -> {});
+					}, _ -> {});
 		});
 	}
 
 	private void revertReaction(MessageReactionAddEvent event) {
 		event.retrieveMessage().queue(msg -> {
 			msg.removeReaction(event.getEmoji(), event.getUser()).queue();
-		}, err -> {});
+		}, _ -> {});
 	}
 }

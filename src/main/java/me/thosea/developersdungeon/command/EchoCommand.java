@@ -122,7 +122,7 @@ public class EchoCommand implements CommandHandler {
 		}
 
 		builder.setFooter(footer, footerIconUrl);
-		return (m_, og) -> {
+		return (_, og) -> {
 			builder.setDescription(og.getContentRaw());
 
 			og.getChannel()

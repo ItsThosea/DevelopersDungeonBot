@@ -105,7 +105,7 @@ public class DebugCommand implements CommandHandler {
 				"Really delete this forum post completely?",
 				false,
 				id -> Button.danger(id, "Delete"),
-				hook -> channel.delete().queue() // no need to respond
+				_ -> channel.delete().queue() // no need to respond
 		);
 	}
 
@@ -142,9 +142,9 @@ public class DebugCommand implements CommandHandler {
 					: Main.guild.removeRoleFromMember(member, role);
 
 			request.queue(
-					i_ -> hook.editOriginal("Done (" + (!hadRole ? "GAVE" : "REMOVED") + ")").queue(),
+					_ -> hook.editOriginal("Done (" + (!hadRole ? "GAVE" : "REMOVED") + ")").queue(),
 					err -> hook.editOriginal("Failed: " + err).queue());
-		}, err -> hook.editOriginal("No person found").queue());
+		}, _ -> hook.editOriginal("No person found").queue());
 	}
 
 	private static void handleOpcode3(InteractionHook hook, List<Invite> list) {
