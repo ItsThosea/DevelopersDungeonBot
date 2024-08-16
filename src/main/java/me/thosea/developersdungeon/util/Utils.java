@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
@@ -185,6 +186,20 @@ public final class Utils {
 	public static String colorToString(Color color) {
 		String hex = "#" + Integer.toHexString(color.getRGB()).substring(2);
 		return hex + " (" + color.getRed() + "," + color.getGreen() + "," + color.getBlue() + ")";
+	}
+
+	public static <T> List<List<T>> splitList(List<T> originalList, int maxSize) {
+		List<List<T>> result = new ArrayList<>();
+
+		int size = originalList.size();
+		for(int i = 0; i < size; i += maxSize) {
+			int end = Math.min(size, i + maxSize);
+
+			List<T> sublist = originalList.subList(i, end);
+			result.add(new ArrayList<>(sublist));
+		}
+
+		return result;
 	}
 
 	public static void loadResource(String name, StreamHandler handler) {
