@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.button.ButtonHandler;
+import me.thosea.developersdungeon.util.AverageColorCounter;
 import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.TeamRoleUtils;
 import me.thosea.developersdungeon.util.TeamRoleUtils.TeamRolePair;
@@ -26,6 +27,8 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.requests.restaction.WebhookMessageEditAction;
+import net.dv8tion.jda.api.utils.messages.MessageRequest;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -106,7 +109,7 @@ public class TeamCommand implements CommandHandler {
 			case "info" -> handleInfo(member, event);
 			case "kick" -> handleKick(member, event);
 			case "list", "listids" -> event.deferReply().queue(hook -> {
-				handleList(hook, event.getSubcommandName().equals("listids"));
+				handleList(member, hook, event.getSubcommandName().equals("listids"));
 			});
 			case null, default -> throw new IllegalStateException("Unexpected value: " + event.getSubcommandName());
 		}
@@ -308,7 +311,7 @@ public class TeamCommand implements CommandHandler {
 		}
 
 		event.deferReply().queue(hook -> {
-			attachment.getProxy().download().exceptionally(err -> {
+			attachment.getProxy().download().exceptionally(_ -> {
 				hook.editOriginal("Failed to download the file. Was it deleted?").queue();
 				return null;
 			}).thenApply(stream -> {
@@ -324,7 +327,7 @@ public class TeamCommand implements CommandHandler {
 
 					pair.baseRole().getManager().setIcon(icon)
 							.and(pair.ownerRole().getManager().setIcon(icon))
-							.queue(i_ -> {
+							.queue(_ -> {
 								hook.editOriginalEmbeds(new EmbedBuilder()
 												.setColor(pair.baseRole().getColorRaw())
 												.setThumbnail(attachment.getUrl())
@@ -336,7 +339,7 @@ public class TeamCommand implements CommandHandler {
 								Utils.logMinor("%s changed their team %s's role icon to %s",
 										member, pair.baseRole(),
 										attachment.getUrl());
-							}, err -> {
+							}, _ -> {
 								hook.editOriginal("Failed to set icon. Is it smaller than 64x64 or over 256KB?" +
 												"\n*(Protip: use https://discordicon.com/icons-editor)*")
 										.setSuppressEmbeds(true)
@@ -514,14 +517,79 @@ public class TeamCommand implements CommandHandler {
 		Utils.logMinor("%s kicked %s from team %s", member, target, pair.baseRole());
 	}
 
-	private void handleList(InteractionHook hook, boolean showId) {
+	private static final int TEAMS_PER_PAGE = 10;
+
+	private void handleList(Member member, InteractionHook hook, boolean showId) {
+		handleList(member.getId(), hook.editOriginal(""), WebhookMessageEditAction::queue, 1, showId);
+	}
+
+	public static <T extends MessageRequest<?>>
+	void handleList(String user, T hook, Consumer<T> sender, int page, boolean showId) {
 		EmbedBuilder builder = new EmbedBuilder();
-		builder.appendDescription("Team roles in " + Main.guild.getName() + ":");
+		builder.appendDescription("Team roles in " + Main.guild.getName());
+		AverageColorCounter totalColor = new AverageColorCounter();
+
+		List<Pair<Role, Consumer<Member>>> toSearch = getTeamRoles(showId, totalColor, builder);
+
+		if(toSearch.isEmpty()) {
+			hook.setContent("There are no team roles here.");
+			sender.accept(hook);
+			return;
+		}
+
+		int maxPage;
+		boolean hasPages;
+
+		if(toSearch.size() > TEAMS_PER_PAGE) {
+			hasPages = true;
+
+			List<List<Pair<Role, Consumer<Member>>>> allPages = Utils.splitList(toSearch, TEAMS_PER_PAGE);
+			maxPage = allPages.size();
+			page = Math.clamp(page - 1, 0, maxPage - 1);
+
+			var currentPage = allPages.get(page).stream().toList();
+			toSearch.clear();
+			toSearch.addAll(currentPage);
+
+			builder.appendDescription(" (Page " + (page + 1) + " of " + maxPage + ")");
+		} else {
+			hasPages = false;
+			page = 0;
+			maxPage = 0;
+		}
+
+		builder.appendDescription(":");
+
+		Color totalColorAvg = totalColor.average();
+		builder.appendDescription("\nAverage Color (All Pages): " + Utils.colorToString(totalColorAvg));
+
+		if(!hasPages) {
+			builder.setColor(totalColorAvg);
+		} else {
+			AverageColorCounter pageColor = new AverageColorCounter();
+			for(var pair : toSearch) {
+				pageColor.addColor(pair.first().getColor());
+			}
+
+			Color pageColorAvg = pageColor.average();
+			builder.appendDescription("\nAverage Color (This Page): " + Utils.colorToString(pageColorAvg));
+
+			AverageColorCounter embedColor = new AverageColorCounter();
+			embedColor.addColor(totalColorAvg);
+			embedColor.addColor(pageColorAvg);
+			builder.setColor(embedColor.average());
+		}
+
+		AtomicInteger done = new AtomicInteger();
+		for(Pair<Role, Consumer<Member>> pair : toSearch) {
+			appendRoleList(hook, sender, pair, done, toSearch, builder, hasPages, page, maxPage, showId, user);
+		}
+	}
+
+	private static List<Pair<Role, Consumer<Member>>> getTeamRoles(boolean showId,
+	                                                               AverageColorCounter totalColor,
+	                                                               EmbedBuilder builder) {
 		List<Pair<Role, Consumer<Member>>> toSearch = new ArrayList<>();
-
-		int roles = 0;
-		int avgR = 0, avgG = 0, avgB = 0;
-
 		for(Role role : Main.guild.getRoles()) {
 			if(!TeamRoleUtils.isTeamRole(role)) continue;
 			if(TeamRoleUtils.isTeamOwnerRole(role)) continue;
@@ -529,53 +597,65 @@ public class TeamCommand implements CommandHandler {
 			Role ownerRole = TeamRoleUtils.findOwnerRole(role);
 			if(ownerRole == null) continue;
 
-			if(role.getColor() != null) {
-				roles++;
-				avgR += role.getColor().getRed();
-				avgG += role.getColor().getGreen();
-				avgB += role.getColor().getBlue();
-			}
+			totalColor.addColor(role.getColor());
 
 			toSearch.add(Pair.of(ownerRole, member -> {
-				builder.appendDescription("\n" + role.getAsMention());
+				String line = "\n" + role.getAsMention();
 				if(showId) {
-					builder.appendDescription(" (" + role.getId() + ")");
+					line += " (" + role.getId() + ")";
 				}
 
-				String owner = member == null ? "???" : member.getAsMention();
-				builder.appendDescription(" owned by " + owner);
+				line += " owned by " + (member == null ? "???" : member.getAsMention());
+				builder.appendDescription(line);
 			}));
 		}
 
-		if(toSearch.isEmpty()) {
-			hook.editOriginal("There are no team roles here.").queue();
+		return toSearch;
+	}
+
+	private static <T extends MessageRequest<?>>
+	void appendRoleList(T hook,
+	                    Consumer<T> sender,
+	                    Pair<Role, Consumer<Member>> pair,
+	                    AtomicInteger done, List<Pair<Role, Consumer<Member>>> toSearch,
+	                    EmbedBuilder builder, boolean hasPages,
+	                    int finalPage, int maxPage, boolean showId,
+	                    String user) {
+		Main.guild.findMembersWithRoles(pair.first())
+				.onSuccess(list -> {
+					handleMembersOnRole(hook, sender, pair, done, toSearch, builder, hasPages, finalPage, maxPage, showId, user, list);
+				})
+				.onError(_ -> {
+					handleMembersOnRole(hook, sender, pair, done, toSearch, builder, hasPages, finalPage, maxPage, showId, user, null);
+				});
+	}
+
+	private static <T extends MessageRequest<?>> void handleMembersOnRole(T hook, Consumer<T> sender, Pair<Role, Consumer<Member>> pair, AtomicInteger done, List<Pair<Role, Consumer<Member>>> toSearch, EmbedBuilder builder, boolean hasPages, int finalPage, int maxPage, boolean showId, String user, List<Member> list) {
+		int requestsDone = done.incrementAndGet();
+		if(requestsDone == 0) {
 			return;
+		} else {
+			pair.second().accept(list == null || list.size() != 1 ? null : list.getFirst());
+			if(requestsDone != toSearch.size()) return;
 		}
 
-		Color color = new Color(avgR / roles, avgG / roles, avgB / roles);
-		builder.setColor(color);
-		builder.appendDescription("\nAverage Color: " + Utils.colorToString(color));
+		hook.setEmbeds(builder.build());
+		if(hasPages) {
+			var prev = Button.primary(
+					ButtonHandler.ID_TEAM_LIST_PAGE + "-" + finalPage + "-" + showId + "-" + user,
+					"< Previous Page");
+			var next = Button.primary(
+					ButtonHandler.ID_TEAM_LIST_PAGE + "-" + (finalPage + 2) + "-" + showId + "-" + user,
+					"Next Page >");
 
-		AtomicInteger done = new AtomicInteger();
-		for(Pair<Role, Consumer<Member>> pair : toSearch) {
-			Main.guild.findMembersWithRoles(pair.first())
-					.onSuccess(list -> {
-						int next = done.incrementAndGet();
-						if(next == 0) {
-							return; // -1
-						} else {
-							pair.second().accept(list.size() != 1 ? null : list.getFirst());
-							if(next != toSearch.size()) return; // waiting on other requests
-						}
-
-						hook.editOriginalEmbeds(builder.build()).queue();
-					})
-					.onError(err -> {
-						hook.editOriginal("Error: " + err).queue();
-						System.out.println("Error while getting team members ");
-						err.printStackTrace();
-					});
+			if(finalPage == 0) {
+				prev = prev.asDisabled();
+			} else if(finalPage == maxPage - 1) {
+				next = next.asDisabled();
+			}
+			hook.setActionRow(prev, next);
 		}
+		sender.accept(hook);
 	}
 
 	static final Map<Long, LongSet> requestCooldowns = new HashMap<>();
@@ -626,7 +706,7 @@ public class TeamCommand implements CommandHandler {
 
 		if(!Utils.isAdmin(member)) {
 			requestCooldowns
-					.computeIfAbsent(member.getIdLong(), i_ -> new LongOpenHashSet())
+					.computeIfAbsent(member.getIdLong(), _ -> new LongOpenHashSet())
 					.add(target.getIdLong());
 		}
 
@@ -646,9 +726,9 @@ public class TeamCommand implements CommandHandler {
 										+ "-" + target.getId()
 										+ "-" + member.getId(),
 								"Cancel request"))
-				.queue(msg -> {
+				.queue(_ -> {
 					Utils.doLater(TimeUnit.SECONDS, 60, () -> {
-						requestCooldowns.computeIfPresent(member.getIdLong(), (i_, set) -> {
+						requestCooldowns.computeIfPresent(member.getIdLong(), (_, set) -> {
 							set.remove(target.getIdLong());
 							return set.isEmpty() ? null : set;
 						});
