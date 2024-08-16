@@ -26,6 +26,8 @@ public final class Constants {
 		public static final long BOTS = id("channels.bots");
 
 		public static final long COMMISSIONS = id("channels.commissions");
+
+		public static final long APPLICATIONS = id("channels.applications");
 	}
 
 	public static class Categories {
@@ -47,6 +49,7 @@ public final class Constants {
 
 		public static final long STAFF = id("roles.staff");
 		public static final long VERIFIED = id("roles.verified");
+		public static final long CONTENT_CREATOR = id("roles.content_creator");
 	}
 
 	private static String str(String key) {
