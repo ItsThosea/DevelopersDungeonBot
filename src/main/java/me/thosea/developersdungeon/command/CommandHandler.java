@@ -31,7 +31,8 @@ public interface CommandHandler {
 				new UnverifiedCommand(),
 				new InviteLeaderboardCommand(),
 				new SetLinkedCommissionCommand(),
-				new UnlinkCommissionCommand()
+				new UnlinkCommissionCommand(),
+				new ApplyCommand()
 		);
 		List<SlashCommandData> result = new ArrayList<>(handlers.size());
 

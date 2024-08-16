@@ -20,6 +20,8 @@ public interface ButtonHandler {
 	String ID_TAKE_TEAM_OWNERSHIP = "devdungeon_taketeamownership";
 	String ID_DENY_TEAM_REQUEST = "devdungeon_denyteamrequest";
 
+	String ID_CONTENT_CREATOR_APP = "devdungeon_content_creator_app";
+
 	static Map<String, ButtonHandler> makeHandlers() {
 		List<ButtonHandler> handlers = List.of(
 				new ButtonMakeChannel(),
@@ -30,7 +32,8 @@ public interface ButtonHandler {
 				new ButtonJoinTeamRole(),
 				new ButtonLeaveTeamRole(),
 				new ButtonTakeTeamRoleOwnership(),
-				new ButtonDenyTeamRequest()
+				new ButtonDenyTeamRequest(),
+				new ButtonContentCreatorApp()
 		);
 
 		Map<String, ButtonHandler> map = new HashMap<>(handlers.size());
