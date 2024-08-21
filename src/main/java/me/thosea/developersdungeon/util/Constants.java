@@ -28,15 +28,13 @@ public final class Constants {
 		public static final long COMMISSIONS = id("channels.commissions");
 
 		public static final long APPLICATIONS = id("channels.applications");
+
+		public static final long COUNTS = id("channels.counts_channel");
 	}
 
 	public static class Categories {
 		public static final long PRIVATE_CHANNELS = id("categories.private_channels");
 		public static final long ARCHIVED_CHANNELS = id("categories.archived_channels");
-	}
-
-	public static class Messages {
-		public static final long SUGGESTION_COUNT = id("messages.suggestion_count");
 	}
 
 	public static class MessageContent {
@@ -52,12 +50,12 @@ public final class Constants {
 		public static final long CONTENT_CREATOR = id("roles.content_creator");
 	}
 
-	private static String str(String key) {
+	public static String str(String key) {
 		String result = Main.properties.getProperty(key);
 		if(result == null) throw new IllegalStateException("No property " + key);
 		return result;
 	}
-	private static long id(String key) {
+	public static long id(String key) {
 		try {
 			long result = Long.parseLong(str(key));
 			if(result < -10) throw new IllegalStateException("Negative values cannot be below -10");
@@ -67,7 +65,7 @@ public final class Constants {
 		}
 	}
 	@SuppressWarnings("SameParameterValue")
-	private static LongSet idSet(String key) {
+	public static LongSet idSet(String key) {
 		String value = str(key);
 		String[] split = value.split(" ");
 		long[] ids = new long[split.length];

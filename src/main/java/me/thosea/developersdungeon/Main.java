@@ -2,6 +2,7 @@ package me.thosea.developersdungeon;
 
 import me.thosea.developersdungeon.command.CommandHandler;
 import me.thosea.developersdungeon.event.AutoReactionListener;
+import me.thosea.developersdungeon.event.AutoThreadListener;
 import me.thosea.developersdungeon.event.ButtonListener;
 import me.thosea.developersdungeon.event.EchoMessageListener;
 import me.thosea.developersdungeon.event.ForumListener;
@@ -12,6 +13,7 @@ import me.thosea.developersdungeon.event.PChannelListener;
 import me.thosea.developersdungeon.event.PingResponseMessageListener;
 import me.thosea.developersdungeon.event.RoleRemoveEvent;
 import me.thosea.developersdungeon.event.SlashCommandListener;
+import me.thosea.developersdungeon.other.ChannelThreadCounter;
 import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.Constants.Channels;
 import me.thosea.developersdungeon.util.Constants.MessageContent;
@@ -65,6 +67,7 @@ public final class Main {
 	@Nullable public static TextChannel minorLogChannel;
 	@Nullable public static TextChannel majorLogChannel;
 	@Nullable public static TextChannel channelLogChannel;
+	@Nullable public static TextChannel countsChannel;
 
 	public static Role teamRoleSandwichTop;
 	public static Role teamRoleSandwichBottom;
@@ -95,7 +98,8 @@ public final class Main {
 				new LeaveListener(),
 				new AutoReactionListener(),
 				new PingResponseMessageListener(),
-				new RoleRemoveEvent());
+				new RoleRemoveEvent(),
+				new AutoThreadListener());
 		jda.updateCommands().addCommands(CommandHandler.buildCommands()).queue();
 
 		scheduleCurseforgePing();
@@ -155,6 +159,9 @@ public final class Main {
 		if((channelLogChannel = guild.getTextChannelById(Channels.CHANNEL_LOG)) == null) {
 			System.out.println("No channel log channel found. Won't send channel logs to discord.");
 		}
+		if((countsChannel = guild.getTextChannelById(Channels.COUNTS)) == null) {
+			System.out.println("No counts channel. Auto-threading will be disabled.");
+		}
 
 		if((teamRoleSandwichTop = guild.getRoleById(Roles.TEAM_ROLE_SANDWICH_TOP)) == null) {
 			oops("No team role sandwich top");
@@ -162,6 +169,11 @@ public final class Main {
 		if((teamRoleSandwichBottom = guild.getRoleById(Roles.TEAM_ROLE_SANDWICH_BOTTOM)) == null) {
 			oops("No team role sandwich bottom");
 		}
+
+		new ChannelThreadCounter("suggestions", "Suggestion", true);
+		new ChannelThreadCounter("modloader", "Modloader Announcement", false);
+		new ChannelThreadCounter("platform", "Platform Announcement", false);
+		new ChannelThreadCounter("minecraft", "Minecraft Announcement", false);
 	}
 
 	private static void oops(String error) {
