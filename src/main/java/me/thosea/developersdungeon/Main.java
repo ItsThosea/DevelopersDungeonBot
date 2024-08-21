@@ -10,11 +10,13 @@ import me.thosea.developersdungeon.event.LogMessageListener;
 import me.thosea.developersdungeon.event.ModalResponseListener;
 import me.thosea.developersdungeon.event.PChannelListener;
 import me.thosea.developersdungeon.event.PingResponseMessageListener;
+import me.thosea.developersdungeon.event.RoleRemoveEvent;
 import me.thosea.developersdungeon.event.SlashCommandListener;
 import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.Constants.Channels;
 import me.thosea.developersdungeon.util.Constants.MessageContent;
 import me.thosea.developersdungeon.util.Constants.Roles;
+import me.thosea.developersdungeon.util.TeamRoleUtils;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -92,10 +94,14 @@ public final class Main {
 				new PChannelListener(),
 				new LeaveListener(),
 				new AutoReactionListener(),
-				new PingResponseMessageListener());
+				new PingResponseMessageListener(),
+				new RoleRemoveEvent());
 		jda.updateCommands().addCommands(CommandHandler.buildCommands()).queue();
 
 		scheduleCurseforgePing();
+
+		// Fill up cache
+		guild.getRoles().stream().filter(TeamRoleUtils::isTeamOwnerRole).forEach(TeamRoleUtils::getRoleOwner);
 	}
 
 	private static void scheduleCurseforgePing() {
