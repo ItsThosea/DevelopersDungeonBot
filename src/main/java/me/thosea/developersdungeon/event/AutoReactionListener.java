@@ -3,11 +3,11 @@ package me.thosea.developersdungeon.event;
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.command.VerifyCommand;
 import me.thosea.developersdungeon.util.Constants.Channels;
-import me.thosea.developersdungeon.util.Constants.Messages;
 import me.thosea.developersdungeon.util.Constants.Roles;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageType;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -27,6 +27,7 @@ public class AutoReactionListener extends ListenerAdapter {
 		if(author.getIdLong() == Main.jda.getSelfUser().getIdLong()) return;
 
 		Message msg = event.getMessage();
+		if(msg.getType() != MessageType.DEFAULT) return;
 
 		long id = event.getChannel().getIdLong();
 		if(EchoMessageListener.lastEchoChannel == id) {
@@ -34,25 +35,12 @@ public class AutoReactionListener extends ListenerAdapter {
 			return;
 		}
 
-		boolean isVerifiedChannel = id == Channels.VERIFY;
-		boolean isSuggestionsChannel = id == Channels.SUGGESTIONS;
-
-		if(isSuggestionsChannel) {
-			String name = author.getUser().getName();
-
-			event.getChannel().retrieveMessageById(Messages.SUGGESTION_COUNT).queue(countMsg -> {
-				int count = Integer.parseInt(countMsg.getContentRaw()) + 1;
-				countMsg.editMessage("" + count).queue();
-				msg.createThreadChannel("Suggestion #" + count + " - " + name).queue();
-			}, _ -> {
-				Utils.logMinor("Warning: no suggestion count message in %s", event.getChannel());
-				msg.createThreadChannel("Suggestion - " + name).queue();
-			});
-		} else {
-			if(!isVerifiedChannel) return;
+		if(id == Channels.VERIFY) {
 			if(Utils.hasRole(author, Roles.VERIFIED)) return;
 			if(Utils.hasRole(author, Roles.STAFF)) return;
 			if(Utils.isAdmin(author)) return;
+		} else if(id != Channels.SUGGESTIONS) {
+			return;
 		}
 
 		msg.addReaction(YES).queue();

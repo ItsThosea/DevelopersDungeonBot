@@ -32,7 +32,8 @@ public interface CommandHandler {
 				new InviteLeaderboardCommand(),
 				new SetLinkedCommissionCommand(),
 				new UnlinkCommissionCommand(),
-				new ApplyCommand()
+				new ApplyCommand(),
+				new EditMessageCommand()
 		);
 		List<SlashCommandData> result = new ArrayList<>(handlers.size());
 
