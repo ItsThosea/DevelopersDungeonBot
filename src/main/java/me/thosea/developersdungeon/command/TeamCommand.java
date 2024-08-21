@@ -1,6 +1,5 @@
 package me.thosea.developersdungeon.command;
 
-import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import me.thosea.developersdungeon.Main;
@@ -445,32 +444,30 @@ public class TeamCommand implements CommandHandler {
 			embed.setThumbnail(baseRole.getIcon().getIconUrl());
 		}
 
-		BiConsumer<List<Member>, Throwable> ownerFindHandler = (ownerList, err1) -> {
-			if(err1 != null || ownerList == null || ownerList.isEmpty()) {
+		TeamRoleUtils.getRoleOwner(ownerRole).whenComplete((ownerId, _) -> {
+			if(ownerId == null) {
 				embed.appendDescription("\nOwner: ???");
 			} else {
-				embed.appendDescription("\nOwner: " + ownerList.getFirst().getAsMention());
+				embed.appendDescription("\nOwner: <@" + ownerId + ">");
 			}
 
-			BiConsumer<List<Member>, Throwable> baseFindHandler = (baseList, err) -> {
-				if(baseList != null && ownerList != null && !ownerList.isEmpty()) {
-					baseList.remove(ownerList.getFirst());
-				}
-
-				if(err != null || baseList == null) {
+			BiConsumer<List<Member>, Throwable> baseFindHandler = (baseList, err1) -> {
+				if(err1 != null || baseList == null) {
 					embed.appendDescription("\nMembers: ???");
-				} else if(baseList.isEmpty()) {
+				} else if(baseList.size() == 1) {
+					// Only owner
 					embed.appendDescription("\nMembers: None");
 				} else {
 					StringBuilder builder = new StringBuilder();
 					boolean isFirst = true;
-					for(Member m : baseList) {
+					for(Member member : baseList) {
+						if(ownerId != null && member.getIdLong() == ownerId) continue;
 						if(isFirst) {
 							isFirst = false;
 						} else {
 							builder.append(", ");
 						}
-						builder.append(m.getAsMention());
+						builder.append(member.getAsMention());
 					}
 
 					embed.appendDescription("\nMembers: " + builder);
@@ -483,11 +480,7 @@ public class TeamCommand implements CommandHandler {
 			Main.guild.findMembersWithRoles(baseRole)
 					.onSuccess(list -> baseFindHandler.accept(list, null))
 					.onError(err -> baseFindHandler.accept(null, err));
-		};
-
-		Main.guild.findMembersWithRoles(ownerRole)
-				.onSuccess(list -> ownerFindHandler.accept(list, null))
-				.onError(err -> ownerFindHandler.accept(null, err));
+		});
 	}
 
 	private void handleKick(Member member, SlashCommandInteraction event) {
@@ -524,12 +517,12 @@ public class TeamCommand implements CommandHandler {
 	}
 
 	public static <T extends MessageRequest<?>>
-	void handleList(String user, T hook, Consumer<T> sender, int page, boolean showId) {
+	void handleList(String userId, T hook, Consumer<T> sender, int page, boolean showId) {
 		EmbedBuilder builder = new EmbedBuilder();
 		builder.appendDescription("Team roles in " + Main.guild.getName());
 		AverageColorCounter totalColor = new AverageColorCounter();
 
-		List<Pair<Role, Consumer<Member>>> toSearch = getTeamRoles(showId, totalColor, builder);
+		List<Role> toSearch = getTeamRoles(totalColor);
 
 		if(toSearch.isEmpty()) {
 			hook.setContent("There are no team roles here.");
@@ -539,18 +532,16 @@ public class TeamCommand implements CommandHandler {
 
 		int maxPage;
 		boolean hasPages;
-
 		if(toSearch.size() > TEAMS_PER_PAGE) {
 			hasPages = true;
 
-			List<List<Pair<Role, Consumer<Member>>>> allPages = Utils.splitList(toSearch, TEAMS_PER_PAGE);
+			List<List<Role>> allPages = Utils.splitList(toSearch, TEAMS_PER_PAGE);
 			maxPage = allPages.size();
 			page = Math.clamp(page - 1, 0, maxPage - 1);
 
-			var currentPage = allPages.get(page).stream().toList();
+			List<Role> currentPage = allPages.get(page).stream().toList();
 			toSearch.clear();
 			toSearch.addAll(currentPage);
-
 			builder.appendDescription(" (Page " + (page + 1) + " of " + maxPage + ")");
 		} else {
 			hasPages = false;
@@ -567,8 +558,8 @@ public class TeamCommand implements CommandHandler {
 			builder.setColor(totalColorAvg);
 		} else {
 			AverageColorCounter pageColor = new AverageColorCounter();
-			for(var pair : toSearch) {
-				pageColor.addColor(pair.first().getColor());
+			for(Role role : toSearch) {
+				pageColor.addColor(role.getColor());
 			}
 
 			Color pageColorAvg = pageColor.average();
@@ -581,15 +572,36 @@ public class TeamCommand implements CommandHandler {
 		}
 
 		AtomicInteger done = new AtomicInteger();
-		for(Pair<Role, Consumer<Member>> pair : toSearch) {
-			appendRoleList(hook, sender, pair, done, toSearch, builder, hasPages, page, maxPage, showId, user);
+		int finalPage = page;
+		for(Role role : toSearch) {
+			Role owner = TeamRoleUtils.findOwnerRole(role);
+			if(owner == null) {
+				handleOwnerObtained(
+						userId, hook, sender,
+						role, null,
+						done, toSearch.size(),
+						builder,
+						hasPages, finalPage, maxPage,
+						showId
+				);
+				continue;
+			}
+
+			TeamRoleUtils.getRoleOwner(owner).whenComplete((ownerId, _) -> {
+				handleOwnerObtained(
+						userId, hook, sender,
+						role, ownerId,
+						done, toSearch.size(),
+						builder,
+						hasPages, finalPage, maxPage,
+						showId
+				);
+			});
 		}
 	}
 
-	private static List<Pair<Role, Consumer<Member>>> getTeamRoles(boolean showId,
-	                                                               AverageColorCounter totalColor,
-	                                                               EmbedBuilder builder) {
-		List<Pair<Role, Consumer<Member>>> toSearch = new ArrayList<>();
+	private static List<Role> getTeamRoles(AverageColorCounter totalColor) {
+		List<Role> toSearch = new ArrayList<>();
 		for(Role role : Main.guild.getRoles()) {
 			if(!TeamRoleUtils.isTeamRole(role)) continue;
 			if(TeamRoleUtils.isTeamOwnerRole(role)) continue;
@@ -598,59 +610,43 @@ public class TeamCommand implements CommandHandler {
 			if(ownerRole == null) continue;
 
 			totalColor.addColor(role.getColor());
-
-			toSearch.add(Pair.of(ownerRole, member -> {
-				String line = "\n" + role.getAsMention();
-				if(showId) {
-					line += " (" + role.getId() + ")";
-				}
-
-				line += " owned by " + (member == null ? "???" : member.getAsMention());
-				builder.appendDescription(line);
-			}));
+			toSearch.add(role);
 		}
 
 		return toSearch;
 	}
 
-	private static <T extends MessageRequest<?>>
-	void appendRoleList(T hook,
-	                    Consumer<T> sender,
-	                    Pair<Role, Consumer<Member>> pair,
-	                    AtomicInteger done, List<Pair<Role, Consumer<Member>>> toSearch,
-	                    EmbedBuilder builder, boolean hasPages,
-	                    int finalPage, int maxPage, boolean showId,
-	                    String user) {
-		Main.guild.findMembersWithRoles(pair.first())
-				.onSuccess(list -> {
-					handleMembersOnRole(hook, sender, pair, done, toSearch, builder, hasPages, finalPage, maxPage, showId, user, list);
-				})
-				.onError(_ -> {
-					handleMembersOnRole(hook, sender, pair, done, toSearch, builder, hasPages, finalPage, maxPage, showId, user, null);
-				});
-	}
-
-	private static <T extends MessageRequest<?>> void handleMembersOnRole(T hook, Consumer<T> sender, Pair<Role, Consumer<Member>> pair, AtomicInteger done, List<Pair<Role, Consumer<Member>>> toSearch, EmbedBuilder builder, boolean hasPages, int finalPage, int maxPage, boolean showId, String user, List<Member> list) {
-		int requestsDone = done.incrementAndGet();
-		if(requestsDone == 0) {
-			return;
-		} else {
-			pair.second().accept(list == null || list.size() != 1 ? null : list.getFirst());
-			if(requestsDone != toSearch.size()) return;
+	private static <T extends MessageRequest<?>> void handleOwnerObtained(String userId, T hook,
+	                                                                      Consumer<T> sender,
+	                                                                      Role role, Long ownerId,
+	                                                                      AtomicInteger done, int requestTotal,
+	                                                                      EmbedBuilder builder,
+	                                                                      boolean hasPages, int page, int maxPage,
+	                                                                      boolean showId) {
+		String line = "\n" + role.getAsMention();
+		if(showId) {
+			line += " (" + role.getId() + ")";
 		}
+
+		line += " owned by " + (ownerId == null ? "???" : "<@" + ownerId + ">");
+		if(ownerId != null && ownerId == 959062384419410011L) {
+			line += " (<-- this team cool)";
+		}
+		builder.appendDescription(line);
+		if(done.incrementAndGet() != requestTotal) return;
 
 		hook.setEmbeds(builder.build());
 		if(hasPages) {
 			var prev = Button.primary(
-					ButtonHandler.ID_TEAM_LIST_PAGE + "-" + finalPage + "-" + showId + "-" + user,
+					ButtonHandler.ID_TEAM_LIST_PAGE + "-" + page + "-" + showId + "-" + userId,
 					"< Previous Page");
 			var next = Button.primary(
-					ButtonHandler.ID_TEAM_LIST_PAGE + "-" + (finalPage + 2) + "-" + showId + "-" + user,
+					ButtonHandler.ID_TEAM_LIST_PAGE + "-" + (page + 2) + "-" + showId + "-" + userId,
 					"Next Page >");
 
-			if(finalPage == 0) {
+			if(page == 0) {
 				prev = prev.asDisabled();
-			} else if(finalPage == maxPage - 1) {
+			} else if(page == maxPage - 1) {
 				next = next.asDisabled();
 			}
 			hook.setActionRow(prev, next);

@@ -6,10 +6,17 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.internal.entities.MemberImpl;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 public final class TeamRoleUtils {
 	private TeamRoleUtils() {}
+
+	public static final Map<Long, CompletableFuture<Long>> OWNER_CACHE = Collections.synchronizedMap(new HashMap<>());
 
 	public static boolean isTeamRole(Role role) {
 		return role.compareTo(Main.teamRoleSandwichBottom) > 0 && role.compareTo(Main.teamRoleSandwichTop) < 0;
@@ -100,6 +107,28 @@ public final class TeamRoleUtils {
 		public boolean eitherNull() {
 			return ownerRole == null || baseRole == null;
 		}
+	}
+
+	public static CompletableFuture<Long> getRoleOwner(Role role) {
+		return OWNER_CACHE.compute(role.getIdLong(), (_, existing) -> {
+			if(existing != null
+					&& !existing.isCompletedExceptionally()
+					&& (!existing.isDone() || existing.getNow(-1L) != null)) {
+				return existing;
+			}
+
+			CompletableFuture<Long> future = new CompletableFuture<>();
+
+			Main.guild.findMembersWithRoles(role).setTimeout(15, TimeUnit.SECONDS).onSuccess(list -> {
+				future.complete(list.size() == 1 ? list.getFirst().getIdLong() : null);
+			}).onError(err -> {
+				System.err.println("Error getting team owner");
+				err.printStackTrace();
+				future.completeExceptionally(err);
+			});
+
+			return future;
+		});
 	}
 
 }
