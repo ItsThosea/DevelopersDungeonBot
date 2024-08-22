@@ -2,16 +2,22 @@ package me.thosea.developersdungeon.event;
 
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.command.VerifyCommand;
+import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.Constants.Channels;
+import me.thosea.developersdungeon.util.Constants.Emojis;
 import me.thosea.developersdungeon.util.Constants.Roles;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.MessageType;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
+import java.util.List;
 
 public class AutoReactionListener extends ListenerAdapter {
 	@Override
@@ -48,6 +54,16 @@ public class AutoReactionListener extends ListenerAdapter {
 		if(event.getUserIdLong() == Main.jda.getSelfUser().getIdLong()) return;
 
 		long id = event.getChannel().getIdLong();
+		if(id == Channels.VOTING) {
+			if(event.getMessageAuthorIdLong() == Main.jda.getSelfUser().getIdLong()
+					&& event.getUserIdLong() != Main.jda.getSelfUser().getIdLong()
+					&& !IRRESISTIBLE_REACTIONS.contains(event.getEmoji())
+					&& !Constants.ADMINS.contains(event.getUserIdLong())) {
+				handleVotingReaction(event);
+			}
+
+			return;
+		}
 		if(id != Channels.SUGGESTIONS && id != Channels.VERIFY) return;
 
 		boolean isYes = Utils.EMOJI_YES.equals(event.getEmoji());
@@ -83,6 +99,48 @@ public class AutoReactionListener extends ListenerAdapter {
 							Utils.logMinor("%s denied verification for %s, kicking them", member, target);
 						}
 					}, _ -> {});
+		});
+	}
+
+	private static final List<Emoji> IRRESISTIBLE_REACTIONS = List.of(
+			Emoji.fromUnicode("U+2705"), // green checkmark
+			Emoji.fromUnicode("U+1F44D"), // thumbs up
+			Emoji.fromUnicode("U+1F525"), // fire
+			Emoji.fromUnicode("U+1F64B"), // person raising hand
+			Emojis.YEAH,
+			Emoji.fromUnicode("U+2764"), // heart
+			Emoji.fromUnicode("U+1F49F"), // heart decoration
+			Emoji.fromUnicode("U+1FAF6"), // heart hands
+			Emoji.fromUnicode("U+1F497"), // heart pulse
+			Emoji.fromUnicode("U+1F4AF"), // 100
+			Emoji.fromUnicode("U+1F44C"), // ok hand
+			Emoji.fromUnicode("U+1F44F"), // clap
+			Emoji.fromUnicode("U+1F1FE"), // Y
+			Emoji.fromUnicode("U+1F1EA"), // E
+			Emoji.fromUnicode("U+1F1F8"), // S
+			Emoji.fromUnicode("U+203C"), // !
+			Emojis.KEOIKI
+	);
+
+	private void handleVotingReaction(MessageReactionAddEvent event) {
+		event.retrieveMessage().queue(msg -> {
+			if(msg.getPoll() == null) return;
+			if(msg.getPoll().getAnswers().size() != 2) return;
+			if(!Utils.EMOJI_SMILE.equals(msg.getPoll().getAnswers().get(1).getEmoji())) {
+				// not "irresistible"
+				return;
+			}
+
+			msg.removeReaction(event.getEmoji(), event.getUser()).queue();
+			if(msg.getReactions().size() - 1 >= 20) return; // max limit
+
+			List<? extends Emoji> reacted = msg.getReactions().stream().map(MessageReaction::getEmoji).toList();
+			for(Emoji emoji : IRRESISTIBLE_REACTIONS) {
+				if(!reacted.contains(emoji)) {
+					msg.addReaction(emoji).queue();
+					break;
+				}
+			}
 		});
 	}
 
