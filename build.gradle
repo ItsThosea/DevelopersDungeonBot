@@ -22,6 +22,7 @@ dependencies {
     }
     api 'it.unimi.dsi:fastutil-core:8.5.13'
     api 'org.slf4j:slf4j-simple:2.0.13'
+    api 'com.google.code.gson:gson:2.11.0'
 }
 
 processResources {

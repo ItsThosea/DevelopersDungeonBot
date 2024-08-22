@@ -30,6 +30,7 @@ public final class Constants {
 		public static final long APPLICATIONS = id("channels.applications");
 
 		public static final long COUNTS = id("channels.counts_channel");
+		public static final long VOTING = id("counts.voting_channel");
 	}
 
 	public static class Categories {

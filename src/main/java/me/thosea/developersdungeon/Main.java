@@ -68,6 +68,7 @@ public final class Main {
 	@Nullable public static TextChannel majorLogChannel;
 	@Nullable public static TextChannel channelLogChannel;
 	@Nullable public static TextChannel countsChannel;
+	@Nullable public static TextChannel votingChannel;
 
 	public static Role teamRoleSandwichTop;
 	public static Role teamRoleSandwichBottom;
@@ -162,6 +163,9 @@ public final class Main {
 		if((countsChannel = guild.getTextChannelById(Channels.COUNTS)) == null) {
 			System.out.println("No counts channel. Auto-threading will be disabled.");
 		}
+		if((votingChannel = guild.getTextChannelById(Channels.VOTING)) == null) {
+			System.out.println("No voting channel. /smpsuggest will be disabled.");
+		}
 
 		if((teamRoleSandwichTop = guild.getRoleById(Roles.TEAM_ROLE_SANDWICH_TOP)) == null) {
 			oops("No team role sandwich top");
@@ -174,6 +178,7 @@ public final class Main {
 		new ChannelThreadCounter("modloader", "Modloader Announcement", false);
 		new ChannelThreadCounter("platform", "Platform Announcement", false);
 		new ChannelThreadCounter("minecraft", "Minecraft Announcement", false);
+		new ChannelThreadCounter("voting", "SMP Suggestion", true);
 	}
 
 	private static void oops(String error) {

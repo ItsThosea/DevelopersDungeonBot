@@ -24,6 +24,8 @@ public interface ButtonHandler {
 
 	String ID_TEAM_LIST_PAGE = "devdungeon_teamlist_page";
 
+	String ID_SMP_SUGGEST_CONFIRM = "devdungeon_smp_suggest_confirm";
+
 	static Map<String, ButtonHandler> makeHandlers() {
 		List<ButtonHandler> handlers = List.of(
 				new ButtonMakeChannel(),
@@ -36,7 +38,8 @@ public interface ButtonHandler {
 				new ButtonTakeTeamRoleOwnership(),
 				new ButtonDenyTeamRequest(),
 				new ButtonContentCreatorApp(),
-				new ButtonTeamListPage()
+				new ButtonTeamListPage(),
+				new ButtonSmpSuggestConfirm()
 		);
 
 		Map<String, ButtonHandler> map = new HashMap<>(handlers.size());

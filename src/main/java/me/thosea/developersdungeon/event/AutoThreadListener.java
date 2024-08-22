@@ -1,6 +1,5 @@
 package me.thosea.developersdungeon.event;
 
-import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.other.ChannelThreadCounter;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageType;
@@ -13,7 +12,6 @@ public class AutoThreadListener extends ListenerAdapter {
 	public void onMessageReceived(MessageReceivedEvent event) {
 		ChannelThreadCounter counter = ChannelThreadCounter.getCounter(event.getChannel().getIdLong());
 		if(counter == null) return;
-		if(Main.jda.getSelfUser().equals(event.getAuthor())) return;
 
 		Message msg = event.getMessage();
 		if(msg.getType() != MessageType.DEFAULT) return;

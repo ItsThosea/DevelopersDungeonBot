@@ -9,15 +9,11 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageType;
 import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 public class AutoReactionListener extends ListenerAdapter {
-	private static final Emoji YES = Emoji.fromUnicode("U+2705");
-	private static final Emoji NO = Emoji.fromUnicode("U+274C");
-
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
 		if(event.isWebhookMessage()) return;
@@ -43,8 +39,8 @@ public class AutoReactionListener extends ListenerAdapter {
 			return;
 		}
 
-		msg.addReaction(YES).queue();
-		msg.addReaction(NO).queue();
+		msg.addReaction(Utils.EMOJI_YES).queue();
+		msg.addReaction(Utils.EMOJI_NO).queue();
 	}
 
 	@Override
@@ -54,8 +50,8 @@ public class AutoReactionListener extends ListenerAdapter {
 		long id = event.getChannel().getIdLong();
 		if(id != Channels.SUGGESTIONS && id != Channels.VERIFY) return;
 
-		boolean isYes = YES.equals(event.getEmoji());
-		boolean isNo = NO.equals(event.getEmoji());
+		boolean isYes = Utils.EMOJI_YES.equals(event.getEmoji());
+		boolean isNo = Utils.EMOJI_NO.equals(event.getEmoji());
 
 		event.retrieveMember().queue(member -> {
 			if(id == Channels.SUGGESTIONS) {

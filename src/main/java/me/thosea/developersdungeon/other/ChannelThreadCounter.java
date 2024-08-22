@@ -69,7 +69,17 @@ public class ChannelThreadCounter {
 	public void makeThread(Message msg) {
 		this.setCount(count + 1);
 
-		String nameSuffix = this.showAuthorName ? " - " + msg.getAuthor().getName() : "";
+		String nameSuffix;
+		if(!showAuthorName) {
+			nameSuffix = "";
+		} else {
+			if(!msg.getEmbeds().isEmpty() && msg.getEmbeds().getFirst().getAuthor() != null) {
+				nameSuffix = " - " + msg.getEmbeds().getFirst().getAuthor().getName();
+			} else {
+				nameSuffix = " - " + msg.getAuthor().getName();
+			}
+		}
+
 		msg.createThreadChannel(namePrefix + count + nameSuffix).queue(channel -> {
 			synchronized(lastThreadedMessages) {
 				if(lastThreadedMessages.size() == STACK_SIZE_LIMIT) {
