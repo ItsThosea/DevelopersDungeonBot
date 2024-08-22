@@ -67,13 +67,15 @@ public class ModalResponseListener extends ListenerAdapter {
 		} else if(id.startsWith(MODAL_SMP_SUGGESTION)) {
 			String content = event.getValue("content").getAsString();
 			String reason = event.getValue("reason").getAsString();
+			String[] args = id.split("-");
 
 			event.deferReply().setEphemeral(true).queue(hook -> {
 				SmpSuggestionCommand.handleModalResponse(
 						member,
-						id.substring(MODAL_SMP_SUGGESTION.length() + 1),
+						args[1],
 						content, reason,
-						hook
+						hook,
+						Boolean.parseBoolean(args[2])
 				);
 			});
 		}

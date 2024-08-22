@@ -31,6 +31,7 @@ import java.util.regex.Pattern;
 public final class Utils {
 	public static final Emoji EMOJI_YES = Emoji.fromUnicode("U+2705");
 	public static final Emoji EMOJI_NO = Emoji.fromUnicode("U+274C");
+	public static final Emoji EMOJI_SMILE = Emoji.fromUnicode("U+1F603");
 
 	private Utils() {}
 
