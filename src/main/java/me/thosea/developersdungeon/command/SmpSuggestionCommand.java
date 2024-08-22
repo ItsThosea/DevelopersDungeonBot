@@ -25,7 +25,7 @@ public class SmpSuggestionCommand implements CommandHandler {
 		return Commands.slash("smpsuggestion", "Make a suggestion to the SMP.")
 				.addSubcommands(new SubcommandData("mod", "Suggest a mod to be added to the SMP."))
 				.addSubcommands(new SubcommandData("config", "Suggest a config change to the SMP."))
-				.addSubcommands(new SubcommandData("rule", "Suggest a rule change to the SMP."))
+				.addSubcommands(new SubcommandData("resourcepack", "Suggest a resourcepack change to the SMP."))
 				.addSubcommands(new SubcommandData("other", "Suggest something else to the SMP."));
 	}
 
