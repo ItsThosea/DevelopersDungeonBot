@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.entities.Message.MentionType;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.Channel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.internal.entities.MemberImpl;
 
@@ -28,6 +29,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class Utils {
+	public static final Emoji EMOJI_YES = Emoji.fromUnicode("U+2705");
+	public static final Emoji EMOJI_NO = Emoji.fromUnicode("U+274C");
+
 	private Utils() {}
 
 	public static void doLater(TimeUnit unit, long time, Runnable action) {

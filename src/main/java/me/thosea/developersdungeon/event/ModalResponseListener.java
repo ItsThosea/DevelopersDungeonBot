@@ -4,6 +4,7 @@ import me.thosea.developersdungeon.button.ButtonContentCreatorApp;
 import me.thosea.developersdungeon.command.ApplyCommand;
 import me.thosea.developersdungeon.command.MakeChannelCommand;
 import me.thosea.developersdungeon.command.SetCommissionStatusCommand;
+import me.thosea.developersdungeon.command.SmpSuggestionCommand;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -15,6 +16,8 @@ public class ModalResponseListener extends ListenerAdapter {
 
 	public static final String MODAL_APPLICATION = "devdungeon_application";
 	public static final String MODAL_APPLICATION_DENY = "devdungeon_application_deny";
+
+	public static final String MODAL_SMP_SUGGESTION = "devdungeon_smp_suggestion";
 
 	@Override
 	public void onModalInteraction(ModalInteractionEvent event) {
@@ -58,6 +61,18 @@ public class ModalResponseListener extends ListenerAdapter {
 						args[1],
 						reason == null ? null : reason.getAsString(),
 						args[2],
+						hook
+				);
+			});
+		} else if(id.startsWith(MODAL_SMP_SUGGESTION)) {
+			String content = event.getValue("content").getAsString();
+			String reason = event.getValue("reason").getAsString();
+
+			event.deferReply().setEphemeral(true).queue(hook -> {
+				SmpSuggestionCommand.handleModalResponse(
+						member,
+						id.substring(MODAL_SMP_SUGGESTION.length() + 1),
+						content, reason,
 						hook
 				);
 			});
