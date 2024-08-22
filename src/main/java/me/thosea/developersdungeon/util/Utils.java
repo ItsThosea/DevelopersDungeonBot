@@ -184,7 +184,9 @@ public final class Utils {
 	}
 
 	public static boolean isValidUrl(String url) {
-		return url.length() <= MessageEmbed.URL_MAX_LENGTH && EmbedBuilder.URL_PATTERN.matcher(url).matches();
+		return url != null
+				&& url.length() <= MessageEmbed.URL_MAX_LENGTH
+				&& EmbedBuilder.URL_PATTERN.matcher(url).matches();
 	}
 
 	public static String colorToString(Color color) {
