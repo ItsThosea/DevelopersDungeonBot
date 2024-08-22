@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.ItemComponent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
@@ -55,8 +54,8 @@ public class ApplyCommand implements CommandHandler {
 				.build();
 
 		event.replyModal(Modal.create(ModalResponseListener.MODAL_APPLICATION, "Content Creator Application")
-						.addComponents(ActionRow.of(url))
-						.addComponents(ActionRow.of(comment))
+						.addActionRow(url)
+						.addActionRow(comment)
 						.build())
 				.queue();
 		Utils.logMinor("%s requested content creator application form", member);

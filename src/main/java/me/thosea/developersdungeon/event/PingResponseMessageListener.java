@@ -1,5 +1,6 @@
 package me.thosea.developersdungeon.event;
 
+import me.thosea.developersdungeon.other.ChannelThreadCounter;
 import me.thosea.developersdungeon.other.PingResponse;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Message;
@@ -14,6 +15,7 @@ public class PingResponseMessageListener extends ListenerAdapter {
 	public void onMessageReceived(MessageReceivedEvent event) {
 		Message message = event.getMessage();
 		if(!Utils.isBeingPinged(message)) return;
+		if(ChannelThreadCounter.getCounter(event.getChannel().getIdLong()) != null) return;
 
 		String content = message.getContentRaw().toLowerCase(Locale.ENGLISH);
 

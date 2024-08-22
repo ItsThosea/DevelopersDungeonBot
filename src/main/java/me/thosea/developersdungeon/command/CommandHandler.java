@@ -33,7 +33,8 @@ public interface CommandHandler {
 				new SetLinkedCommissionCommand(),
 				new UnlinkCommissionCommand(),
 				new ApplyCommand(),
-				new EditMessageCommand()
+				new EditMessageCommand(),
+				new SmpSuggestionCommand()
 		);
 		List<SlashCommandData> result = new ArrayList<>(handlers.size());
 
