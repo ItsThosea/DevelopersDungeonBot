@@ -179,6 +179,8 @@ public final class Main {
 		new ChannelThreadCounter("platform", "Platform Announcement", false);
 		new ChannelThreadCounter("minecraft", "Minecraft Announcement", false);
 		new ChannelThreadCounter("voting", "SMP Suggestion", true);
+		new ChannelThreadCounter("new_releases", "New Release", true);
+		new ChannelThreadCounter("update_releases", "Update Release", true);
 	}
 
 	private static void oops(String error) {
