@@ -6,6 +6,7 @@ import me.thosea.developersdungeon.util.Constants;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel.AutoArchiveDuration;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayDeque;
@@ -80,15 +81,17 @@ public class ChannelThreadCounter {
 			}
 		}
 
-		msg.createThreadChannel(namePrefix + count + nameSuffix).queue(channel -> {
-			synchronized(lastThreadedMessages) {
-				if(lastThreadedMessages.size() == STACK_SIZE_LIMIT) {
-					lastThreadedMessages.removeLast();
-				}
+		msg.createThreadChannel(namePrefix + count + nameSuffix)
+				.setAutoArchiveDuration(AutoArchiveDuration.TIME_24_HOURS)
+				.queue(channel -> {
+					synchronized(lastThreadedMessages) {
+						if(lastThreadedMessages.size() == STACK_SIZE_LIMIT) {
+							lastThreadedMessages.removeLast();
+						}
 
-				this.lastThreadedMessages.push(new ThreadEntry(msg.getIdLong(), channel.getIdLong(), count));
-			}
-		});
+						this.lastThreadedMessages.push(new ThreadEntry(msg.getIdLong(), channel.getIdLong(), count));
+					}
+				});
 	}
 
 	public void removeMessage(long messageId) {
