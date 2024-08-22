@@ -2,6 +2,7 @@ package me.thosea.developersdungeon.util;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
 import me.thosea.developersdungeon.Main;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 
 public final class Constants {
 	public static final String VERSION = str("version");
@@ -51,6 +52,11 @@ public final class Constants {
 		public static final long CONTENT_CREATOR = id("roles.content_creator");
 	}
 
+	public static class Emojis {
+		public static final Emoji YEAH = emoji("yeah");
+		public static final Emoji KEOIKI = emoji("keoiki");
+	}
+
 	public static String str(String key) {
 		String result = Main.properties.getProperty(key);
 		if(result == null) throw new IllegalStateException("No property " + key);
@@ -78,5 +84,14 @@ public final class Constants {
 			}
 		}
 		return LongSet.of(ids);
+	}
+	public static Emoji emoji(String name) {
+		String idStr = str("emojis." + name);
+		if(idStr.isBlank()) {
+			System.out.println("Warning: No or invalid emoji \"" + name + "\"");
+			return Emoji.fromUnicode("U+2753");
+		} else {
+			return Emoji.fromCustom(name, id("emojis." + name), false);
+		}
 	}
 }
