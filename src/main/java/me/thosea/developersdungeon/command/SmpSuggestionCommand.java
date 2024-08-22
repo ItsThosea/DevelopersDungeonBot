@@ -25,8 +25,8 @@ public class SmpSuggestionCommand implements CommandHandler {
 		return Commands.slash("smpsuggestion", "Make a suggestion to the SMP.")
 				.addSubcommands(new SubcommandData("mod", "Suggest a mod to be added to the SMP."))
 				.addSubcommands(new SubcommandData("config", "Suggest a config change to the SMP."))
-				.addSubcommands(new SubcommandData("resourcepack", "Suggest a resourcepack change to the SMP."))
-				.addSubcommands(new SubcommandData("other", "Suggest something else to the SMP."));
+				.addSubcommands(new SubcommandData("pack", "Suggest a resource, data or shader pack change to the SMP."))
+				.addSubcommands(new SubcommandData("other", "Suggest something else, like a mod removal or rule change, to the SMP."));
 	}
 
 	@Override
@@ -43,13 +43,22 @@ public class SmpSuggestionCommand implements CommandHandler {
 
 	public static Modal createModal(String type, String prevContent, String prevReason,
 	                                boolean irresistible) {
-		TextInput content = TextInput.create("content",
-						(type.equals("mod") ? "Mod URL" : "Change wanted"),
-						TextInputStyle.SHORT)
+		String contentPrompt;
+		String contentPlaceholder;
+		if(type.equals("mod")) {
+			contentPrompt = "Mod URL";
+			contentPlaceholder = "Duplicate mod URLs will be auto-blocked.";
+		} else if(type.equals("pack")) {
+			contentPrompt = "Pack URL";
+			contentPlaceholder = "Duplicate pack URLs will be auto-blocked.";
+		} else {
+			contentPrompt = "Change Wanted";
+			contentPlaceholder = null;
+		}
+
+		TextInput content = TextInput.create("content", contentPrompt, TextInputStyle.SHORT)
 				.setRequiredRange(3, 300)
-				.setPlaceholder(prevContent == null
-						? (type.equals("mod") ? "Duplicate mod URLs will be auto-blocked." : null)
-						: getPlaceholder(prevContent))
+				.setPlaceholder(prevContent == null ? contentPlaceholder : getPlaceholder(prevContent))
 				.build();
 		TextInput reason = TextInput.create("reason", "Reasoning", TextInputStyle.PARAGRAPH)
 				.setPlaceholder(getPlaceholder(prevReason))
