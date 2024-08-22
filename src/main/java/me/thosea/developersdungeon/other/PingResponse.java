@@ -26,7 +26,7 @@ public interface PingResponse {
 			normal("walls", "$cdn/gif/walls.gif"),
 			normal("hair", "Thanks for asking, I use dungeon-metal hair gel."),
 			normal("uwu", "No."),
-			normal("kotlin", "You menace!"),
+			normal("kotlin dsl", "You menace!"),
 			normal("java", "I'm conscious and I love java!"),
 			normal("clyde", Emoji.fromUnicode("U+1FAE1").getFormatted()),
 			normal("everyone", content -> {
