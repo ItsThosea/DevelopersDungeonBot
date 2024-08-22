@@ -76,9 +76,13 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		event.deferReply().setEphemeral(true).queue(hook -> {
 			if(args[1].equals("mod")) {
 				String url = embed.getFields().getFirst().getValue();
+				if(!Utils.isValidUrl(url)) {
+					hook.editOriginal("That is not a valid URL.").queue();
+					return;
+				}
+
 				FILE_READER_SERVICE.execute(() -> {
 					try {
-						assert url != null;
 						readFile(member, url, event.getMessage(), hook);
 					} catch(Exception e) {
 						System.err.println("Error reading file " + SUGGESTED_MODS_FILE.toAbsolutePath());
