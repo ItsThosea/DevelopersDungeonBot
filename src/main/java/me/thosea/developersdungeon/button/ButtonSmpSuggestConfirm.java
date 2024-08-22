@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -76,7 +77,8 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		);
 
 		event.deferReply().setEphemeral(true).queue(hook -> {
-			if(args[1].equals("mod") && !irresistible) {
+			String type = args[1];
+			if(!irresistible && (type.equals("mod") || type.equals("pack"))) {
 				String url = embed.getFields().getFirst().getValue();
 				if(!Utils.isValidUrl(url)) {
 					hook.editOriginal("That is not a valid URL.").queue();
@@ -85,7 +87,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 
 				FILE_READER_SERVICE.execute(() -> {
 					try {
-						readFile(member, url, event.getMessage(), false, hook);
+						readFile(member, url, event.getMessage(), false, type, hook);
 					} catch(Exception e) {
 						System.err.println("Error reading file " + SUGGESTED_MODS_FILE.toAbsolutePath());
 						e.printStackTrace();
@@ -103,19 +105,37 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 
 	}
 
+	private static final List<String> URL_KEYWORDS_MOD = List.of(
+			"curseforge.com/minecraft/mc-mods/",
+			"modrinth.com/mod/"
+	);
+	private static final List<String> URL_KEYWORDS_PACK = List.of(
+			"curseforge.com/minecraft/texture-packs/",
+			"curseforge.com/minecraft/data-packs/",
+			"curseforge.com/minecraft/shaders/",
+			"modrinth.com/resourcepack/",
+			"modrinth.com/datapack/",
+			"modrinth.com/shader/"
+	);
+	private static final String MOD_BAD_URL = "Not a link to a CurseForge or Modrinth mod page.";
+	private static final String PACK_BAD_URL = "Not a link to a CurseForge/Modrinth resourcepack, datapack or shaderpack.";
+
 	private void readFile(Member member, String url,
 	                      Message msg, boolean irresistible,
+						  String type,
 	                      InteractionHook hook) throws Exception {
-		String keyword = "curseforge.com/minecraft/mc-mods/";
-		int index = url.indexOf(keyword);
-		if(index == -1) {
-			keyword = "modrinth.com/mod/";
+		boolean isMod = type.equals("mod");
+		Iterator<String> keywordIterator = (isMod ? URL_KEYWORDS_MOD : URL_KEYWORDS_PACK).iterator();
+		String keyword;
+		int index;
+		do {
+			if(!keywordIterator.hasNext()) {
+				hook.editOriginal(isMod ? MOD_BAD_URL : PACK_BAD_URL).queue();
+				return;
+			}
+			keyword = keywordIterator.next();
 			index = url.indexOf(keyword);
-		}
-		if(index == -1) {
-			hook.editOriginal("Not a link to a CurseForge or Modrinth mod page.").queue();
-			return;
-		}
+		} while(index == -1);
 
 		String modid = url.substring(index + keyword.length()).split("/")[0];
 		if(modid.isBlank()) {
