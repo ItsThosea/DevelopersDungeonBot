@@ -89,7 +89,7 @@ public class SmpSuggestionCommand implements CommandHandler {
 	                                       InteractionHook hook,
 	                                       boolean irresistible) {
 		MessageEmbed embed = new EmbedBuilder()
-				.setAuthor(member.getUser().getName(), "https://curseforge.com/minecraft/mc-mods/badoptimizations", member.getUser().getAvatarUrl())
+				.setAuthor(member.getUser().getName(), null, member.getUser().getAvatarUrl())
 				.setColor(member.getColorRaw())
 				.setTitle(type.substring(0, 1).toUpperCase(Locale.ENGLISH) + type.substring(1) + " Suggestion")
 				.addField(
