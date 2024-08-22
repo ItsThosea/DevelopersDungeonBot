@@ -63,6 +63,8 @@ public class DebugCommand implements CommandHandler {
 					.queue(hook -> Main.guild.retrieveInvites().queue(list -> {
 						handleOpcode3(hook, list);
 					}));
+		} else if(opcode == 4) {
+			handleOpcode4(event, args);
 		} else {
 			event.reply("""
 							Invalid opcodes. Opcodes:
@@ -70,7 +72,7 @@ public class DebugCommand implements CommandHandler {
 							1: Delete commission request forum post
 							2: Toggle role (user, role)
 							3: List invites (ephemeral)
-							4: List ping responses
+							4: Irresistible SMP suggestion (type)
 							""")
 					.setEphemeral(true)
 					.queue();
@@ -147,7 +149,19 @@ public class DebugCommand implements CommandHandler {
 		}, _ -> hook.editOriginal("No person found").queue());
 	}
 
-	private static void handleOpcode3(InteractionHook hook, List<Invite> list) {
+	private void handleOpcode3(InteractionHook hook, List<Invite> list) {
 		InviteLeaderboardCommand.makeResponse(hook, list);
+	}
+
+	private void handleOpcode4(SlashCommandInteraction event, String[] args) {
+		if(args.length < 1) {
+			event.reply("Invalid args").setEphemeral(true).queue();
+			return;
+		}
+
+		event.replyModal(SmpSuggestionCommand.createModal(
+				String.join(" ", args),
+				null, null, true
+		)).queue();
 	}
 }
