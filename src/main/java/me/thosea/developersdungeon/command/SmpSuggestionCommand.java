@@ -49,10 +49,10 @@ public class SmpSuggestionCommand implements CommandHandler {
 				.setRequiredRange(3, 300)
 				.setPlaceholder(prevContent == null
 						? (type.equals("mod") ? "Duplicate mod URLs will be auto-blocked." : null)
-						: "Previous: " + prevContent)
+						: getPlaceholder(prevContent))
 				.build();
 		TextInput reason = TextInput.create("reason", "Reasoning", TextInputStyle.PARAGRAPH)
-				.setPlaceholder(prevReason == null ? null : "Previous: " + prevReason)
+				.setPlaceholder(getPlaceholder(prevReason))
 				.setRequiredRange(3, 500)
 				.build();
 
@@ -60,6 +60,19 @@ public class SmpSuggestionCommand implements CommandHandler {
 				ModalResponseListener.MODAL_SMP_SUGGESTION + "-" + type + "-" + irresistible,
 				"SMP suggestion (" + type + ")"
 		).addActionRow(content).addActionRow(reason).build();
+	}
+
+	private static String getPlaceholder(String prev) {
+		if(prev == null) {
+			return null;
+		} else {
+			String prefix = "Previous: ";
+			int maxLength = 100 - prefix.length();
+			if(prev.length() > maxLength) {
+				prev = prev.substring(0, maxLength - 3) + "...";
+			}
+			return prefix + prev;
+		}
 	}
 
 	public static void handleModalResponse(Member member, String type,
