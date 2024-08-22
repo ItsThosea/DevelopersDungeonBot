@@ -42,6 +42,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 	public void handle(Member member, ButtonInteractionEvent event, String[] args) {
 		MessageEmbed embed = event.getMessage().getEmbeds().getFirst();
 		List<Field> fields = embed.getFields();
+		boolean irresistible = Boolean.parseBoolean(args[2]);
 
 		if(args[0].equals("deny")) {
 			event.reply("Then so be it.")
@@ -53,7 +54,8 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 			event.replyModal(SmpSuggestionCommand.createModal(
 							args[1],
 							fields.get(0).getValue(),
-							fields.get(1).getValue()
+							fields.get(1).getValue(),
+							irresistible
 					))
 					.and(event.getMessage().delete())
 					.queue(_ -> {}, _ -> {});
@@ -74,7 +76,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		);
 
 		event.deferReply().setEphemeral(true).queue(hook -> {
-			if(args[1].equals("mod")) {
+			if(args[1].equals("mod") && !irresistible) {
 				String url = embed.getFields().getFirst().getValue();
 				if(!Utils.isValidUrl(url)) {
 					hook.editOriginal("That is not a valid URL.").queue();
@@ -83,7 +85,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 
 				FILE_READER_SERVICE.execute(() -> {
 					try {
-						readFile(member, url, event.getMessage(), hook);
+						readFile(member, url, event.getMessage(), false, hook);
 					} catch(Exception e) {
 						System.err.println("Error reading file " + SUGGESTED_MODS_FILE.toAbsolutePath());
 						e.printStackTrace();
@@ -95,13 +97,15 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 					}
 				});
 			} else {
-				handle(member, event.getMessage(), hook, null);
+				handle(member, event.getMessage(), hook, irresistible, null);
 			}
 		});
 
 	}
 
-	private void readFile(Member member, String url, Message msg, InteractionHook hook) throws Exception {
+	private void readFile(Member member, String url,
+	                      Message msg, boolean irresistible,
+	                      InteractionHook hook) throws Exception {
 		String keyword = "curseforge.com/minecraft/mc-mods/";
 		int index = url.indexOf(keyword);
 		if(index == -1) {
@@ -127,9 +131,9 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		}
 
 		if(object.get(modid) instanceof JsonPrimitive link) {
-			hook.editOriginal("This has already been suggested: " + link.getAsString()).queue();
+			hook.editOriginal("This was already suggested: " + link.getAsString()).queue();
 		} else {
-			handle(member, msg, hook, msgUrl -> {
+			handle(member, msg, hook, irresistible, msgUrl -> {
 				object.addProperty(modid, msgUrl);
 				try {
 					Files.writeString(SUGGESTED_MODS_FILE, GSON.toJson(object));
@@ -148,7 +152,8 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		}
 	}
 
-	private void handle(Member member, Message msg, InteractionHook hook, Consumer<String> urlHandler) {
+	private void handle(Member member, Message msg, InteractionHook hook,
+	                    boolean irresistible, Consumer<String> urlHandler) {
 		assert Main.votingChannel != null; // checked when running command
 
 		COOLDOWNS.put(member.getIdLong(), System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1));
@@ -158,7 +163,10 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 				.sendMessageEmbeds(msg.getEmbeds().getFirst())
 				.setPoll(MessagePollData.builder("Do you want this?")
 						.addAnswer("Yes", Utils.EMOJI_YES)
-						.addAnswer("Nuh uh!", Utils.EMOJI_NO)
+						.addAnswer(
+								irresistible ? "Definitely!" : "Nuh uh!",
+								irresistible ? Utils.EMOJI_SMILE : Utils.EMOJI_NO
+						)
 						.setDuration(1, TimeUnit.DAYS)
 						.build())
 				.queue(voteMsg -> {

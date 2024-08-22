@@ -38,16 +38,17 @@ public class SmpSuggestionCommand implements CommandHandler {
 
 		String type = event.getSubcommandName();
 		assert type != null;
-		event.replyModal(createModal(type, null, null)).queue();
+		event.replyModal(createModal(type, null, null, false)).queue();
 	}
 
-	public static Modal createModal(String type, String prevContent, String prevReason) {
+	public static Modal createModal(String type, String prevContent, String prevReason,
+	                                boolean irresistible) {
 		TextInput content = TextInput.create("content",
 						(type.equals("mod") ? "Mod URL" : "Change wanted"),
 						TextInputStyle.SHORT)
 				.setRequiredRange(3, 300)
 				.setPlaceholder(prevContent == null
-						? (type.equals("mod") ?  "Duplicate mod URLs will be auto-blocked." : null)
+						? (type.equals("mod") ? "Duplicate mod URLs will be auto-blocked." : null)
 						: "Previous: " + prevContent)
 				.build();
 		TextInput reason = TextInput.create("reason", "Reasoning", TextInputStyle.PARAGRAPH)
@@ -56,14 +57,15 @@ public class SmpSuggestionCommand implements CommandHandler {
 				.build();
 
 		return Modal.create(
-				ModalResponseListener.MODAL_SMP_SUGGESTION + "-" + type,
+				ModalResponseListener.MODAL_SMP_SUGGESTION + "-" + type + "-" + irresistible,
 				"SMP suggestion (" + type + ")"
 		).addActionRow(content).addActionRow(reason).build();
 	}
 
 	public static void handleModalResponse(Member member, String type,
 	                                       String content, String reason,
-	                                       InteractionHook hook) {
+	                                       InteractionHook hook,
+	                                       boolean irresistible) {
 		MessageEmbed embed = new EmbedBuilder()
 				.setAuthor(member.getUser().getName(), "https://curseforge.com/minecraft/mc-mods/badoptimizations", member.getUser().getAvatarUrl())
 				.setColor(member.getColorRaw())
@@ -75,12 +77,13 @@ public class SmpSuggestionCommand implements CommandHandler {
 				.addField("Reasoning", reason, false)
 				.build();
 
-		hook.editOriginal("Confirm suggestion?")
+		String idSuffix = type + "-" + irresistible;
+		hook.editOriginal(!irresistible ? "Confirm suggestion?" : "Confirm ||irresistible|| suggestion?")
 				.setEmbeds(embed)
 				.setActionRow(
-						Button.success(ID_SMP_SUGGEST_CONFIRM + "-accept-" + type, "Yes"),
-						Button.secondary(ID_SMP_SUGGEST_CONFIRM + "-retype-" + type, "Retype"),
-						Button.danger(ID_SMP_SUGGEST_CONFIRM + "-deny-" + type, "Nevermind"))
+						Button.success(ID_SMP_SUGGEST_CONFIRM + "-accept-" + idSuffix, "Yes"),
+						Button.secondary(ID_SMP_SUGGEST_CONFIRM + "-retype-" + idSuffix, "Retype"),
+						Button.danger(ID_SMP_SUGGEST_CONFIRM + "-deny-" + idSuffix, "Nevermind"))
 				.queue();
 	}
 }
