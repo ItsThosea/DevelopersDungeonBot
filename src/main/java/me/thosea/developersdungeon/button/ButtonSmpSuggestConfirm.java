@@ -76,9 +76,10 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 				fields.get(1).getValue()
 		);
 
+		String type = args[1];
+
 		event.deferReply().setEphemeral(true).queue(hook -> {
-			String type = args[1];
-			if(!irresistible && (type.equals("mod") || type.equals("pack"))) {
+			if((type.equals("mod") || type.equals("pack"))) {
 				String url = embed.getFields().getFirst().getValue();
 				if(!Utils.isValidUrl(url)) {
 					hook.editOriginal("That is not a valid URL.").queue();
@@ -87,7 +88,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 
 				FILE_READER_SERVICE.execute(() -> {
 					try {
-						readFile(member, url, event.getMessage(), false, type, hook);
+						readFile(member, url, event.getMessage(), irresistible, type, hook);
 					} catch(Exception e) {
 						System.err.println("Error reading file " + SUGGESTED_MODS_FILE.toAbsolutePath());
 						e.printStackTrace();
@@ -99,7 +100,10 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 					}
 				});
 			} else {
-				handle(member, event.getMessage(), hook, irresistible, null);
+				String title = type.equals("config")
+						? "Config Suggestion - " + fields.get(0).getValue()
+						: member.getEffectiveName() + "'s Suggestion";
+				sendMessage(member, event.getMessage(), hook, irresistible, title, null);
 			}
 		});
 
@@ -122,7 +126,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 
 	private void readFile(Member member, String url,
 	                      Message msg, boolean irresistible,
-						  String type,
+	                      String type,
 	                      InteractionHook hook) throws Exception {
 		boolean isMod = type.equals("mod");
 		Iterator<String> keywordIterator = (isMod ? URL_KEYWORDS_MOD : URL_KEYWORDS_PACK).iterator();
@@ -143,6 +147,13 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 			return;
 		}
 
+		String title = (type.equals("mod") ? "Mod " : "Pack ") + " Suggestion - " + modid;
+
+		if(irresistible) {
+			sendMessage(member, msg, hook, true, title, null);
+			return;
+		}
+
 		JsonObject object;
 		if(!Files.exists(SUGGESTED_MODS_FILE)) {
 			object = new JsonObject();
@@ -153,7 +164,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		if(object.get(modid) instanceof JsonPrimitive link) {
 			hook.editOriginal("This was already suggested: " + link.getAsString()).queue();
 		} else {
-			handle(member, msg, hook, irresistible, msgUrl -> {
+			sendMessage(member, msg, hook, false, title, msgUrl -> {
 				object.addProperty(modid, msgUrl);
 				try {
 					Files.writeString(SUGGESTED_MODS_FILE, GSON.toJson(object));
@@ -172,8 +183,8 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		}
 	}
 
-	private void handle(Member member, Message msg, InteractionHook hook,
-	                    boolean irresistible, Consumer<String> urlHandler) {
+	private void sendMessage(Member member, Message msg, InteractionHook hook,
+	                         boolean irresistible, String title, Consumer<String> urlHandler) {
 		assert Main.votingChannel != null; // checked when running command
 
 		COOLDOWNS.put(member.getIdLong(), System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1));
@@ -181,7 +192,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 
 		Main.votingChannel
 				.sendMessageEmbeds(msg.getEmbeds().getFirst())
-				.setPoll(MessagePollData.builder("Do you want this?")
+				.setPoll(MessagePollData.builder(title)
 						.addAnswer("Yes", Utils.EMOJI_YES)
 						.addAnswer(
 								irresistible ? "Definitely!" : "Nuh uh!",
