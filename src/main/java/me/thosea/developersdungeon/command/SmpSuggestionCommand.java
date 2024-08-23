@@ -57,7 +57,7 @@ public class SmpSuggestionCommand implements CommandHandler {
 		}
 
 		TextInput content = TextInput.create("content", contentPrompt, TextInputStyle.SHORT)
-				.setRequiredRange(3, 300)
+				.setRequiredRange(3, 280)
 				.setPlaceholder(prevContent == null ? contentPlaceholder : getPlaceholder(prevContent))
 				.build();
 		TextInput reason = TextInput.create("reason", "Reasoning", TextInputStyle.PARAGRAPH)
