@@ -147,7 +147,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 			return;
 		}
 
-		String title = (type.equals("mod") ? "Mod " : "Pack ") + " Suggestion - " + modid;
+		String title = (type.equals("mod") ? "Mod" : "Pack") + " Suggestion - " + modid;
 
 		if(irresistible) {
 			sendMessage(member, msg, hook, true, title, null);
