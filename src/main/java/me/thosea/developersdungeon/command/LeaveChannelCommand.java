@@ -2,17 +2,16 @@ package me.thosea.developersdungeon.command;
 
 import me.thosea.developersdungeon.button.ButtonHandler;
 import me.thosea.developersdungeon.util.PChannelUtils;
-import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
-public class DeleteChannelCommand implements CommandHandler {
+public class LeaveChannelCommand implements CommandHandler {
 	@Override
 	public SlashCommandData makeCommandData() {
-		return Commands.slash("deletechannel", "Delete a private channel.");
+		return Commands.slash("leavechannel", "Leave a private channel.");
 	}
 
 	@Override
@@ -27,13 +26,13 @@ public class DeleteChannelCommand implements CommandHandler {
 			if(ownerId == null) {
 				hook.editOriginal("Could not find the bot message.").queue();
 				return;
-			} else if(!member.getId().equals(ownerId) && !Utils.isAdmin(member)) {
-				hook.editOriginal("You can't do that!").queue();
+			} else if(member.getId().equals(ownerId)) {
+				hook.editOriginal("You can't do that because you own the channel. Delete or archive it instead.").queue();
 				return;
 			}
 
-			hook.editOriginal("Are you SURE you want to delete this channel? All messages and attachments will be gone!")
-					.setActionRow(Button.danger(ButtonHandler.ID_PCHANNEL_DELETE + "-" + ownerId, "Delete"))
+			hook.editOriginal("Are you SURE you want to leave the channel?\nYou'll lose access to it permanently unless re-added!")
+					.setActionRow(Button.danger(ButtonHandler.ID_PCHANNEL_LEAVE, "Leave"))
 					.queue();
 		}));
 	}

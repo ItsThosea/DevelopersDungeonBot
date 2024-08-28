@@ -34,7 +34,8 @@ public interface CommandHandler {
 				new UnlinkCommissionCommand(),
 				new ApplyCommand(),
 				new EditMessageCommand(),
-				new SmpSuggestionCommand()
+				new SmpSuggestionCommand(),
+				new LeaveChannelCommand()
 		);
 		List<SlashCommandData> result = new ArrayList<>(handlers.size());
 
