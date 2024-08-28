@@ -13,6 +13,7 @@ public interface ButtonHandler {
 
 	String ID_PCHANNEL_HELP = "devdungeon_channel_help";
 	String ID_PCHANNEL_DELETE = "devdungeon_channel_delete";
+	String ID_PCHANNEL_LEAVE = "devdungeon_channel_leave";
 
 	String ID_DELETE_TEAM_ROLE = "devdungeon_deleteteamrole";
 	String ID_JOIN_TEAM_ROLE = "devdungeon_jointeamrole";
@@ -39,7 +40,8 @@ public interface ButtonHandler {
 				new ButtonDenyTeamRequest(),
 				new ButtonContentCreatorApp(),
 				new ButtonTeamListPage(),
-				new ButtonSmpSuggestConfirm()
+				new ButtonSmpSuggestConfirm(),
+				new ButtonPChannelLeave()
 		);
 
 		Map<String, ButtonHandler> map = new HashMap<>(handlers.size());
