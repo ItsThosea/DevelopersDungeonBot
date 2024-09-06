@@ -59,7 +59,7 @@ public final class Utils {
 	public static long getNextCurseforgePingTime() {
 		var date = ZonedDateTime.now();
 		var target = LocalDate.now()
-				.atTime(19, 0)
+				.atTime(12, 0)
 				.atZone(ZoneOffset.UTC)
 				.plusMonths(1)
 				.withDayOfMonth(1)
