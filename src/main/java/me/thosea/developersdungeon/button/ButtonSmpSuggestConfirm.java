@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.command.SmpSuggestionCommand;
 import me.thosea.developersdungeon.util.Utils;
@@ -32,7 +31,6 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 	private static final Executor FILE_READER_SERVICE = Executors.newSingleThreadExecutor();
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-	private static final Long2LongOpenHashMap COOLDOWNS = new Long2LongOpenHashMap();
 
 	@Override
 	public String getId() {
@@ -61,12 +59,6 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 					.and(event.getMessage().delete())
 					.queue(_ -> {}, _ -> {});
 			return;
-		} else if(COOLDOWNS.containsKey(member.getIdLong()) && !Utils.isAdmin(member)) {
-			long until = COOLDOWNS.get(member.getIdLong()) / 1000L;
-			event.reply("You're on cooldown. You'll be able to make another suggestion <t:" + until + ":R>.")
-					.setEphemeral(true)
-					.queue();
-			return;
 		}
 
 		Utils.logMinor(
@@ -88,7 +80,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 
 				FILE_READER_SERVICE.execute(() -> {
 					try {
-						readFile(member, url, event.getMessage(), irresistible, type, hook);
+						readFile(url, event.getMessage(), irresistible, type, hook);
 					} catch(Exception e) {
 						System.err.println("Error reading file " + SUGGESTED_MODS_FILE.toAbsolutePath());
 						e.printStackTrace();
@@ -103,7 +95,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 				String title = type.equals("config")
 						? "Config Suggestion - " + fields.get(0).getValue()
 						: member.getEffectiveName() + "'s Suggestion";
-				sendMessage(member, event.getMessage(), hook, irresistible, title, null);
+				sendMessage(event.getMessage(), hook, irresistible, title, null);
 			}
 		});
 
@@ -124,9 +116,8 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 	private static final String MOD_BAD_URL = "Not a link to a CurseForge or Modrinth mod page.";
 	private static final String PACK_BAD_URL = "Not a link to a CurseForge/Modrinth resourcepack, datapack or shaderpack.";
 
-	private void readFile(Member member, String url,
-	                      Message msg, boolean irresistible,
-	                      String type,
+	private void readFile(String url, Message msg,
+	                      boolean irresistible, String type,
 	                      InteractionHook hook) throws Exception {
 		boolean isMod = type.equals("mod");
 		Iterator<String> keywordIterator = (isMod ? URL_KEYWORDS_MOD : URL_KEYWORDS_PACK).iterator();
@@ -150,7 +141,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		String title = (type.equals("mod") ? "Mod" : "Pack") + " Suggestion - " + modid;
 
 		if(irresistible) {
-			sendMessage(member, msg, hook, true, title, null);
+			sendMessage(msg, hook, true, title, null);
 			return;
 		}
 
@@ -164,7 +155,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		if(object.get(modid) instanceof JsonPrimitive link) {
 			hook.editOriginal("This was already suggested: " + link.getAsString()).queue();
 		} else {
-			sendMessage(member, msg, hook, false, title, msgUrl -> {
+			sendMessage(msg, hook, false, title, msgUrl -> {
 				object.addProperty(modid, msgUrl);
 				try {
 					Files.writeString(SUGGESTED_MODS_FILE, GSON.toJson(object));
@@ -183,12 +174,9 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		}
 	}
 
-	private void sendMessage(Member member, Message msg, InteractionHook hook,
+	private void sendMessage(Message msg, InteractionHook hook,
 	                         boolean irresistible, String title, Consumer<String> urlHandler) {
 		assert Main.votingChannel != null; // checked when running command
-
-		COOLDOWNS.put(member.getIdLong(), System.currentTimeMillis() + TimeUnit.HOURS.toMillis(1));
-		Utils.doLater(TimeUnit.HOURS, 1, () -> COOLDOWNS.remove(member.getIdLong()));
 
 		Main.votingChannel
 				.sendMessageEmbeds(msg.getEmbeds().getFirst())
