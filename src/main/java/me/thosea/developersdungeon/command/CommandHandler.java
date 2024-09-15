@@ -41,6 +41,7 @@ public interface CommandHandler {
 
 		for(CommandHandler handler : handlers) {
 			SlashCommandData data = handler.makeCommandData();
+			data.setGuildOnly(true);
 			result.add(data);
 			COMMANDS.put(data.getName(), handler);
 		}
