@@ -1,7 +1,5 @@
 package me.thosea.developersdungeon.button;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import me.thosea.developersdungeon.Main;
@@ -29,8 +27,6 @@ import java.util.function.Consumer;
 public class ButtonSmpSuggestConfirm implements ButtonHandler {
 	private static final Path SUGGESTED_MODS_FILE = Paths.get("./devdungeon_suggested_mods.json");
 	private static final Executor FILE_READER_SERVICE = Executors.newSingleThreadExecutor();
-
-	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 	@Override
 	public String getId() {
@@ -149,7 +145,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		if(!Files.exists(SUGGESTED_MODS_FILE)) {
 			object = new JsonObject();
 		} else {
-			object = GSON.fromJson(Files.readString(SUGGESTED_MODS_FILE), JsonObject.class);
+			object = Utils.GSON.fromJson(Files.readString(SUGGESTED_MODS_FILE), JsonObject.class);
 		}
 
 		if(object.get(modid) instanceof JsonPrimitive link) {
@@ -158,7 +154,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 			sendMessage(msg, hook, false, title, msgUrl -> {
 				object.addProperty(modid, msgUrl);
 				try {
-					Files.writeString(SUGGESTED_MODS_FILE, GSON.toJson(object));
+					Files.writeString(SUGGESTED_MODS_FILE, Utils.GSON.toJson(object));
 				} catch(IOException e) {
 					System.err.println("Error writing to file " + SUGGESTED_MODS_FILE.toAbsolutePath());
 					e.printStackTrace();
