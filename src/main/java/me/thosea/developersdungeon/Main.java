@@ -190,5 +190,4 @@ public final class Main {
 		jda.shutdownNow();
 		System.exit(1);
 	}
-
 }

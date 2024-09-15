@@ -14,11 +14,17 @@ public class SlashCommandListener extends ListenerAdapter {
 
 	@Override
 	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
+		if(event.getMember() == null) {
+			// Never runs, commands are guild-only
+			return;
+		}
+
 		CommandHandler handler = CommandHandler.COMMANDS.get(event.getName());
 
 		if(handler != null) {
 			long id = event.getMember().getIdLong();
 			if(COOLDOWNS.contains(id)) {
+				// Spamming messes with some commands
 				event.reply("You can't execute commands that fast!")
 						.setEphemeral(true)
 						.queue();

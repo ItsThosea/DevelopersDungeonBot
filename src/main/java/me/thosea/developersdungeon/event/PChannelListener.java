@@ -141,7 +141,7 @@ public class PChannelListener extends ListenerAdapter {
 
 				if(log.getTimeCreated().isBefore(lowerTimeThreshold)) {
 					// If that's the oldest one, then there probably wasn't a log for it.
-					// Or the internet is just really slow.
+					// Or the internet is just really delayed.
 					break;
 				}
 
