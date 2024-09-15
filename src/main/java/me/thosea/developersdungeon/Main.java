@@ -6,6 +6,7 @@ import me.thosea.developersdungeon.event.AutoThreadListener;
 import me.thosea.developersdungeon.event.ButtonListener;
 import me.thosea.developersdungeon.event.EchoMessageListener;
 import me.thosea.developersdungeon.event.ForumListener;
+import me.thosea.developersdungeon.event.IrresistibleSuggestionMessageListener;
 import me.thosea.developersdungeon.event.LeaveListener;
 import me.thosea.developersdungeon.event.LogMessageListener;
 import me.thosea.developersdungeon.event.ModalResponseListener;
@@ -100,7 +101,8 @@ public final class Main {
 				new AutoReactionListener(),
 				new PingResponseMessageListener(),
 				new RoleRemoveEvent(),
-				new AutoThreadListener());
+				new AutoThreadListener(),
+				new IrresistibleSuggestionMessageListener());
 		jda.updateCommands().addCommands(CommandHandler.buildCommands()).queue();
 
 		scheduleCurseforgePing();
