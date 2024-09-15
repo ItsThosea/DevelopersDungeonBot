@@ -1,5 +1,7 @@
 package me.thosea.developersdungeon.util;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.Main.StreamHandler;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -29,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class Utils {
+	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	public static final Emoji EMOJI_YES = Emoji.fromUnicode("U+2705");
 	public static final Emoji EMOJI_NO = Emoji.fromUnicode("U+274C");
 	public static final Emoji EMOJI_SMILE = Emoji.fromUnicode("U+1F603");
