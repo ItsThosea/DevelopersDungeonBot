@@ -100,7 +100,7 @@ public class SmpSuggestionCommand implements CommandHandler {
 				.build();
 
 		String idSuffix = type + "-" + irresistible;
-		hook.editOriginal(!irresistible ? "Confirm suggestion?" : "Confirm ||irresistible|| suggestion?")
+		hook.editOriginal(!irresistible ? "Confirm suggestion?" : "Confirm ~~irresistible~~ suggestion?")
 				.setEmbeds(embed)
 				.setActionRow(
 						Button.success(ID_SMP_SUGGEST_CONFIRM + "-accept-" + idSuffix, "Yes"),
