@@ -76,10 +76,10 @@ public final class ForumUtils {
 				.build();
 	}
 
-	public static String getPreviousChannels(Message message) {
-		if(message.getEmbeds().size() < 2) return null;
+	public static String getPreviousChannels(Message msg) {
+		if(msg.getEmbeds().size() < 2) return null;
 
-		String desc = message.getEmbeds().get(1).getDescription();
+		String desc = msg.getEmbeds().get(1).getDescription();
 		if(desc == null) return null;
 
 		desc = desc.substring(desc.indexOf(':') + 2);

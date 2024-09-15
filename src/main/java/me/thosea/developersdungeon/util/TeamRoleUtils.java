@@ -130,5 +130,4 @@ public final class TeamRoleUtils {
 			return future;
 		});
 	}
-
 }
