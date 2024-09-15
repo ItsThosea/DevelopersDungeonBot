@@ -19,6 +19,10 @@ public class AverageColorCounter {
 		factors++;
 	}
 
+	public int factors() {
+		return factors;
+	}
+
 	public Color average() {
 		if(factors == 0) {
 			return new Color(255, 255, 255);

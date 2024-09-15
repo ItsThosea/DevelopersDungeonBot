@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import me.thosea.developersdungeon.Main;
+import me.thosea.developersdungeon.util.AverageColorCounter;
 import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.TeamRoleUtils;
 import me.thosea.developersdungeon.util.TeamRoleUtils.TeamRolePair;
@@ -22,7 +23,6 @@ import net.dv8tion.jda.api.requests.RestAction;
 import java.awt.Color;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class InviteLeaderboardCommand implements CommandHandler {
 	@Override
@@ -49,9 +49,7 @@ public class InviteLeaderboardCommand implements CommandHandler {
 		Long2IntOpenHashMap map = new Long2IntOpenHashMap();
 		LongSet multipleInvites = new LongOpenHashSet();
 
-		AtomicInteger r = new AtomicInteger(), g = new AtomicInteger(), b = new AtomicInteger();
-		AtomicInteger factors = new AtomicInteger();
-
+		AverageColorCounter colorCounter = new AverageColorCounter();
 		RestAction<?> actions = null;
 
 		for(Invite invite : list) {
@@ -73,13 +71,8 @@ public class InviteLeaderboardCommand implements CommandHandler {
 				if(member == null) return;
 				TeamRolePair pair = TeamRoleUtils.getTeamRoles(member);
 				if(pair.baseRole() == null) return;
-				Color color = pair.baseRole().getColor();
-				if(color == null) return;
 
-				r.addAndGet(color.getRed() * uses);
-				g.addAndGet(color.getBlue() * uses);
-				b.addAndGet(color.getBlue() * uses);
-				factors.addAndGet(uses);
+				colorCounter.addColor(pair.baseRole().getColor());
 			});
 
 			actions = (actions == null) ? action : actions.and(action);
@@ -113,12 +106,8 @@ public class InviteLeaderboardCommand implements CommandHandler {
 					});
 
 			Color color;
-			if(factors.get() > 0) {
-				color = new Color(
-						r.get() / factors.get(),
-						g.get() / factors.get(),
-						b.get() / factors.get()
-				);
+			if(colorCounter.factors() > 0) {
+				color = colorCounter.average();
 
 				builder.append("\nWeighted Team Color *(weight based on invite uses)*: ")
 						.append(Utils.colorToString(color));
