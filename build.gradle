@@ -1,11 +1,11 @@
 plugins {
-    id 'java-library'
+    id "java-library"
     id "io.github.goooler.shadow" version "8.1.7"
 }
 
-group = 'me.thosea'
-version = '1.4.6'
-description = 'DevelopersDungeon'
+group = "me.thosea"
+version = "1.4.6"
+description = "DevelopersDungeon"
 
 repositories {
     mavenCentral()
@@ -13,13 +13,13 @@ repositories {
 }
 
 dependencies {
-    api('net.dv8tion:JDA:5.0.0-beta.24') {
+    api("net.dv8tion:JDA:5.0.0-beta.24") {
         // exclude audio library
-        exclude group: 'club.minnced', module: "opus-java"
+        exclude group: "club.minnced", module: "opus-java"
     }
-    api 'it.unimi.dsi:fastutil-core:8.5.13'
-    api 'org.slf4j:slf4j-simple:2.0.13'
-    api 'com.google.code.gson:gson:2.11.0'
+    api "it.unimi.dsi:fastutil-core:8.5.13"
+    api "org.slf4j:slf4j-simple:2.0.13"
+    api "com.google.code.gson:gson:2.11.0"
 }
 
 processResources {
@@ -34,14 +34,14 @@ java.toolchain {
 
 shadowJar {
     minimize()
-    include '**'
+    include "**"
 
-    exclude 'META-INF/**'
-    include 'META-INF/MANIFEST.MF'
-    include 'META-INF/devdungeon.properties'
+    exclude "META-INF/**"
+    include "META-INF/MANIFEST.MF"
+    include "META-INF/devdungeon.properties"
 
     // library only used for audio
-    exclude 'com/iwebpp/**'
+    exclude "com/iwebpp/**"
 
     archiveFileName = "DevelopersDungeon-${version}-dev.jar"
     tasks.build.finalizedBy tasks.shadowJar
@@ -51,6 +51,6 @@ shadowJar {
 jar {
     archiveFileName = "DevelopersDungeon-${version}-dev-no_deps.jar"
     manifest {
-        attributes 'Main-Class': 'me.thosea.developersdungeon.Main'
+        attributes "Main-Class": "me.thosea.developersdungeon.Main"
     }
 }
