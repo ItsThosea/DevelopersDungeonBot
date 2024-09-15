@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 public class LogMessageListener extends ListenerAdapter {
 	@Override
 	public void onMessageReceived(MessageReceivedEvent event) {
-		if(!logChannel(event.getChannel())) return;
+		if(!shouldLogChannel(event.getChannel())) return;
 
 		Utils.logChannel("%s - %s: %s > %s",
 				event.getChannel(),
@@ -20,7 +20,7 @@ public class LogMessageListener extends ListenerAdapter {
 				event.getMessage());
 	}
 
-	private boolean logChannel(MessageChannelUnion channel) {
+	private boolean shouldLogChannel(MessageChannelUnion channel) {
 		if(ForumUtils.isCommissionRequest(channel)) return true;
 		if(PChannelUtils.isPrivateChannel(channel)) return true;
 		if(channel.getIdLong() == Constants.Channels.VERIFY) return true;

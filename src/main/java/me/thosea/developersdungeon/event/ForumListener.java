@@ -42,5 +42,4 @@ public class ForumListener extends ListenerAdapter {
 			ForumUtils.sendBotMessage(channel);
 		});
 	}
-
 }
