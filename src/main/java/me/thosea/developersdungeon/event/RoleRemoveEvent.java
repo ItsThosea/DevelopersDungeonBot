@@ -16,7 +16,7 @@ public class RoleRemoveEvent extends ListenerAdapter {
 	@Override
 	public void onGuildMemberRemove(GuildMemberRemoveEvent event) {
 		TeamRoleUtils.OWNER_CACHE.entrySet().removeIf(entry -> {
-			return entry.getValue().getNow(-1L) == event.getUser().getIdLong();
+			return TeamRoleUtils.equalsSafe(entry.getValue(), event.getUser().getIdLong());
 		});
 	}
 
@@ -39,13 +39,9 @@ public class RoleRemoveEvent extends ListenerAdapter {
 	public void onGuildMemberRoleRemove(GuildMemberRoleRemoveEvent event) {
 		event.getRoles().stream().filter(TeamRoleUtils::isTeamOwnerRole).forEach(role -> {
 			TeamRoleUtils.OWNER_CACHE.computeIfPresent(role.getIdLong(), (_, future) -> {
-				try {
-					return future.getNow(-1L) != event.getMember().getIdLong()
-							? future
-							: null;
-				} catch(Exception e) {
-					return null;
-				}
+				return TeamRoleUtils.equalsSafe(future, event.getMember().getIdLong())
+						? null
+						: future;
 			});
 		});
 	}

@@ -18,6 +18,11 @@ public final class TeamRoleUtils {
 
 	public static final Map<Long, CompletableFuture<Long>> OWNER_CACHE = Collections.synchronizedMap(new HashMap<>());
 
+	public static boolean equalsSafe(CompletableFuture<Long> future, long value) {
+		Long now = future.getNow(-1L);
+		return now != null && now == value;
+	}
+
 	public static boolean isTeamRole(Role role) {
 		return role.compareTo(Main.teamRoleSandwichBottom) > 0 && role.compareTo(Main.teamRoleSandwichTop) < 0;
 	}
