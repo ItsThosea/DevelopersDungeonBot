@@ -48,6 +48,7 @@ public class IrresistibleSuggestionMessageListener extends ListenerAdapter {
 		}
 
 		if(!(event.getChannel() instanceof ThreadChannel thread)) return;
+		if(thread.getParentChannel().getIdLong() != Channels.VOTING) return;
 
 		event.retrieveMessage().queue(msg -> {
 			thread.retrieveParentMessage().queue(parentMsg -> {
