@@ -43,7 +43,7 @@ public class DebugCommand implements CommandHandler {
 			return;
 		}
 
-		int opcode = event.getOption("opcode", OptionMapping::getAsInt);
+		int opcode = event.getOption("opcode", -1, OptionMapping::getAsInt);
 
 		String argsRaw = event.getOption("args", OptionMapping::getAsString);
 		String[] args;
