@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -219,6 +220,14 @@ public final class Utils {
 			handler.accept(stream);
 		} catch(Exception e) {
 			throw new IllegalStateException("Failed to read file from " + name, e);
+		}
+	}
+
+	public static <T> T getSafe(Supplier<T> supplier) {
+		try {
+			return supplier.get();
+		} catch(Throwable ignored) {
+			return null;
 		}
 	}
 
