@@ -39,9 +39,12 @@ public class ChannelThreadCounter {
 		if(Files.exists(lastThreadedMessagesJson)) {
 			try {
 				JsonArray array = Utils.GSON.fromJson(Files.readString(lastThreadedMessagesJson), JsonArray.class);
-				for(int i = 0; i < array.size(); i++) {
-					JsonObject obj = array.get(i).getAsJsonObject();
-					lastThreadedMessages.push(ThreadEntry.read(obj));
+				synchronized(lastThreadedMessages) {
+					for(int i = 0; i < array.size(); i++) {
+						JsonObject obj = array.get(i).getAsJsonObject();
+						ThreadEntry entry = ThreadEntry.read(obj);
+						lastThreadedMessages.push(entry);
+					}
 				}
 			} catch(Exception e) {
 				System.err.println("Failed to read channel thread counter message stack from " + lastThreadedMessagesJson.toAbsolutePath());
@@ -147,9 +150,12 @@ public class ChannelThreadCounter {
 	}
 
 	private void writeLastThreadedMessages() {
-		JsonArray array = new JsonArray(lastThreadedMessages.size());
-		for(Iterator<ThreadEntry> it = lastThreadedMessages.descendingIterator(); it.hasNext(); ) {
-			array.add(it.next().serialize());
+		JsonArray array;
+		synchronized(lastThreadedMessages) {
+			array = new JsonArray(lastThreadedMessages.size());
+			for(Iterator<ThreadEntry> it = lastThreadedMessages.descendingIterator(); it.hasNext(); ) {
+				array.add(it.next().serialize());
+			}
 		}
 
 		try {
