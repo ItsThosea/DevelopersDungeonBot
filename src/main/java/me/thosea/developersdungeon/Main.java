@@ -1,7 +1,6 @@
 package me.thosea.developersdungeon;
 
 import me.thosea.developersdungeon.command.CommandHandler;
-import me.thosea.developersdungeon.event.AutoReactionListener;
 import me.thosea.developersdungeon.event.AutoThreadListener;
 import me.thosea.developersdungeon.event.ButtonListener;
 import me.thosea.developersdungeon.event.EchoMessageListener;
@@ -12,6 +11,7 @@ import me.thosea.developersdungeon.event.LogMessageListener;
 import me.thosea.developersdungeon.event.ModalResponseListener;
 import me.thosea.developersdungeon.event.PChannelListener;
 import me.thosea.developersdungeon.event.PingResponseMessageListener;
+import me.thosea.developersdungeon.event.ReactionListener;
 import me.thosea.developersdungeon.event.RoleRemoveEvent;
 import me.thosea.developersdungeon.event.SlashCommandListener;
 import me.thosea.developersdungeon.other.ChannelThreadCounter;
@@ -98,7 +98,7 @@ public final class Main {
 				new LogMessageListener(),
 				new PChannelListener(),
 				new LeaveListener(),
-				new AutoReactionListener(),
+				new ReactionListener(),
 				new PingResponseMessageListener(),
 				new RoleRemoveEvent(),
 				new AutoThreadListener(),
