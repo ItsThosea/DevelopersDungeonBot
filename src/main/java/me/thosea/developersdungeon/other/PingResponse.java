@@ -27,13 +27,9 @@ public interface PingResponse {
 			normal("hair", "Thanks for asking, I use dungeon-metal hair gel."),
 			normal("uwu", "No."),
 			normal("kotlin dsl", "You menace!"),
+			normal("kotlin", "Sure"),
 			normal("java", "I'm conscious and I love java!"),
 			normal("clyde", Emoji.fromUnicode("U+1FAE1").getFormatted()),
-			normal("everyone", content -> {
-				return content.contains("dont")
-						? "Pfft, I'd never! Right...?"
-						: "I can ping everyone, just depends on how many curseforge points you have.";
-			}),
 
 			// -- tiny games start
 			normal("frolic", _ -> {
@@ -74,7 +70,7 @@ public interface PingResponse {
 			// -- tiny games died shortly after, back to thosea
 
 			normal("wario 64", "[waario]($cdn/mp4/wario_64.mp4)"),
-			normal("thrills at night", "[did somebody say Paper Mario?]($cdn/mp4/thrills_at_night.mp4)"),
+			normal("thrills at night", "[paper mario?!]($cdn/mp4/thrills_at_night.mp4)"),
 			normal("mario dark world", "[so retro!!!]($cdn/mp4/mario_dark_world.mp4)"),
 			normal("link", "$cdn/gif/link.gif"),
 			normal("rapper", "[big]($cdn/mp4/rapper.mp4)"),
@@ -97,6 +93,7 @@ public interface PingResponse {
 
 				return false;
 			}, () -> "" + System.currentTimeMillis()),
+			progressive("copy me", "Fine. You want to copy me so badly?"),
 			progressive("bedrock", "Beetroot seeds came to Java or Bedrock first?"),
 			progressive("bane of arthropods", "What enchantment can give spiders slowness?"),
 			progressive("dandelions", "Other than carrots, what can be used to breed rabbits?"),
@@ -115,9 +112,6 @@ public interface PingResponse {
 			progressive("a1d1e1a8f9238fd79af0080ae2eb5ab9859a9f36", "What is the hash of the first commit pushed onto the BetterMC github page?"),
 			progressive("celestial", "No celestial calamity could ever even match this."),
 			progressive("jamma", "Now if only Jamma was here..."),
-			progressive("grapplecaster", "Grapplecaster[.]($cdn/png/grapplecaster.png)"),
-			progressive("windmaker", "Windmaker[.]($cdn/png/windmaker.png)"),
-			progressive("feline foe", "Feline Foe[.]($cdn/png/feline_foe.png)"),
 			finalProgressive(content -> {
 				if(content.contains("you win") || content.contains("i lose")) {
 					return "i win";
