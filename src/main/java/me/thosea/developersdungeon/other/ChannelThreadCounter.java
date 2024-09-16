@@ -36,28 +36,34 @@ public class ChannelThreadCounter {
 		this.showAuthorName = showAuthorName;
 		this.lastThreadedMessagesJson = Paths.get("./devdungeon_autothread_" + id + ".json");
 
-		if(Files.exists(lastThreadedMessagesJson)) {
-			try {
-				JsonArray array = Utils.GSON.fromJson(Files.readString(lastThreadedMessagesJson), JsonArray.class);
-				synchronized(lastThreadedMessages) {
-					for(int i = 0; i < array.size(); i++) {
-						JsonObject obj = array.get(i).getAsJsonObject();
-						ThreadEntry entry = ThreadEntry.read(obj);
-						lastThreadedMessages.push(entry);
-					}
-				}
-			} catch(Exception e) {
-				System.err.println("Failed to read channel thread counter message stack from " + lastThreadedMessagesJson.toAbsolutePath());
-				e.printStackTrace();
-			}
-		}
-
 		long countMessageId = Constants.id("counts." + id + "_message");
 		long sourceChannel = Constants.id("counts." + id + "_channel");
 
 		if(Main.countsChannel != null && countMessageId > 1 && sourceChannel > 1) {
 			COUNTERS.put(sourceChannel, this);
 			this.countMessage = getCountMessage(Main.countsChannel, id, countMessageId);
+
+			TextChannel channel = Main.guild.getTextChannelById(sourceChannel);
+
+			if(channel != null && Files.exists(lastThreadedMessagesJson)) {
+				try {
+					JsonArray array = Utils.GSON.fromJson(Files.readString(lastThreadedMessagesJson), JsonArray.class);
+					synchronized(lastThreadedMessages) {
+						for(int i = 0; i < array.size(); i++) {
+							ThreadEntry entry = ThreadEntry.read(array.get(i).getAsJsonObject());
+							lastThreadedMessages.push(entry);
+
+							channel.retrieveMessageById(entry.messageId).queue(
+									_ -> {}, // message exists
+									_ -> this.removeMessage(entry.messageId) // message is gone
+							);
+						}
+					}
+				} catch(Exception e) {
+					System.err.println("Failed to read channel thread counter message stack from " + lastThreadedMessagesJson.toAbsolutePath());
+					e.printStackTrace();
+				}
+			}
 		} else {
 			this.countMessage = null;
 			if(Main.countsChannel != null) {
