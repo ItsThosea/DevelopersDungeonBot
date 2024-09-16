@@ -28,6 +28,7 @@ import net.dv8tion.jda.api.interactions.commands.build.SubcommandGroupData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.requests.restaction.WebhookMessageEditAction;
 import net.dv8tion.jda.api.utils.messages.MessageRequest;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.Color;
 import java.io.IOException;
@@ -36,10 +37,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class TeamCommand implements CommandHandler {
@@ -114,6 +114,7 @@ public class TeamCommand implements CommandHandler {
 		}
 	}
 
+	// credit: jab125
 	private void handleMentionable(Member member, SlashCommandInteraction event) {
 		TeamRolePair rolePair = TeamRoleUtils.getTeamRoles(member);
 
@@ -156,21 +157,19 @@ public class TeamCommand implements CommandHandler {
 			color = new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
 		}
 
-		event.deferReply().queue(hook -> {
-			var baseRequest = Main.guild
-					.createRole()
-					.setName(name)
-					.setColor(color)
-					.setMentionable(true)
-					.setPermissions(Set.of());
+		event.deferReply().queue(hook -> Thread.ofVirtual().start(() -> {
+					Role baseRole = Main.guild.createRole()
+							.setName(name)
+							.setColor(color)
+							.setMentionable(true)
+							.setPermissions(Set.of())
+							.complete();
+					Role ownerRole = Main.guild.createRole()
+							.setPermissions()
+							.setName(name + " (Owner)")
+							.setColor(color)
+							.complete();
 
-			baseRequest.queue(baseRole -> {
-				var ownerRequest = Main.guild.createRole()
-						.setPermissions()
-						.setName(name + " (Owner)")
-						.setColor(color);
-
-				ownerRequest.queue(ownerRole -> {
 					Main.guild.modifyRolePositions()
 							.selectPosition(baseRole)
 							.moveBelow(Main.teamRoleSandwichTop)
@@ -200,9 +199,8 @@ public class TeamCommand implements CommandHandler {
 							.queue();
 
 					Utils.logMinor("%s made team %s: %s", member, name, roles);
-				});
-			});
-		});
+				})
+		);
 	}
 
 	private void handleDelete(Member member, SlashCommandInteraction event) {
@@ -317,7 +315,7 @@ public class TeamCommand implements CommandHandler {
 				// recheck roles
 				TeamRolePair pair = TeamRoleUtils.getTeamRoles(member);
 				if(pair.eitherNull()) {
-					hook.editOriginal("You aren't an owner of a team!").queue();
+					hook.editOriginal("You aren't an owner of a team anymore!").queue();
 					return stream;
 				}
 
@@ -425,7 +423,6 @@ public class TeamCommand implements CommandHandler {
 		});
 	}
 
-	// Think you've seen cursed?
 	private static void handleInfo(InteractionHook hook, Role baseRole, Role ownerRole) {
 		EmbedBuilder embed = new EmbedBuilder();
 		embed.setColor(baseRole.getColorRaw());
@@ -444,42 +441,40 @@ public class TeamCommand implements CommandHandler {
 			embed.setThumbnail(baseRole.getIcon().getIconUrl());
 		}
 
-		TeamRoleUtils.getRoleOwner(ownerRole).whenComplete((ownerId, _) -> {
-			if(ownerId == null) {
-				embed.appendDescription("\nOwner: ???");
-			} else {
+		Thread.ofVirtual().start(() -> {
+			CompletableFuture<Long> future = TeamRoleUtils.getRoleOwner(ownerRole);
+			Long ownerId = Utils.getSafe(future::join);
+
+			if(ownerId != null) {
 				embed.appendDescription("\nOwner: <@" + ownerId + ">");
+			} else {
+				embed.appendDescription("\nOwner: ???");
 			}
 
-			BiConsumer<List<Member>, Throwable> baseFindHandler = (baseList, err1) -> {
-				if(err1 != null || baseList == null) {
-					embed.appendDescription("\nMembers: ???");
-				} else if(baseList.size() == 1) {
-					// Only owner
-					embed.appendDescription("\nMembers: None");
-				} else {
-					StringBuilder builder = new StringBuilder();
-					boolean isFirst = true;
-					for(Member member : baseList) {
-						if(ownerId != null && member.getIdLong() == ownerId) continue;
-						if(isFirst) {
-							isFirst = false;
-						} else {
-							builder.append(", ");
-						}
-						builder.append(member.getAsMention());
-					}
+			List<Member> members = Utils.getSafe(Main.guild.findMembersWithRoles(baseRole)::get);
 
-					embed.appendDescription("\nMembers: " + builder);
+			if(members == null) {
+				embed.appendDescription("\nMembers: ???");
+			} else if(members.size() == 1) {
+				// Only owner
+				embed.appendDescription("\nMembers: None");
+			} else {
+				StringBuilder builder = new StringBuilder();
+				boolean isFirst = true;
+				for(Member member : members) {
+					if(ownerId != null && member.getIdLong() == ownerId) continue;
+					if(isFirst) {
+						isFirst = false;
+					} else {
+						builder.append(", ");
+					}
+					builder.append(member.getAsMention());
 				}
 
-				hook.editOriginalEmbeds(embed.build()).setAllowedMentions(List.of()).queue();
-			};
+				embed.appendDescription("\nMembers: " + builder);
+			}
 
-
-			Main.guild.findMembersWithRoles(baseRole)
-					.onSuccess(list -> baseFindHandler.accept(list, null))
-					.onError(err -> baseFindHandler.accept(null, err));
+			hook.editOriginalEmbeds(embed.build()).setAllowedMentions(List.of()).queue();
 		});
 	}
 
@@ -502,9 +497,9 @@ public class TeamCommand implements CommandHandler {
 			return;
 		}
 
-		Main.guild.removeRoleFromMember(target, pair.baseRole()).queue();
 		event.reply("Kicked " + target.getAsMention() + " from team " + pair.baseRole().getAsMention() + ".")
 				.setAllowedMentions(List.of())
+				.and(Main.guild.removeRoleFromMember(target, pair.baseRole()))
 				.queue();
 
 		Utils.logMinor("%s kicked %s from team %s", member, target, pair.baseRole());
@@ -520,9 +515,9 @@ public class TeamCommand implements CommandHandler {
 	void handleList(String userId, T hook, Consumer<T> sender, int page, boolean showId) {
 		EmbedBuilder builder = new EmbedBuilder();
 		builder.appendDescription("Team roles in " + Main.guild.getName());
-		AverageColorCounter totalColor = new AverageColorCounter();
+		AverageColorCounter allPagesColor = new AverageColorCounter();
 
-		List<Role> toSearch = getTeamRoles(totalColor);
+		List<Role> toSearch = getTeamRoles(allPagesColor);
 
 		if(toSearch.isEmpty()) {
 			hook.setContent("There are no team roles here.");
@@ -551,11 +546,11 @@ public class TeamCommand implements CommandHandler {
 
 		builder.appendDescription(":");
 
-		Color totalColorAvg = totalColor.average();
-		builder.appendDescription("\nAverage Color (All Pages): " + Utils.colorToString(totalColorAvg));
+		Color allPageColorAvg = allPagesColor.average();
+		builder.appendDescription("\nAverage Color (All Pages): " + Utils.colorToString(allPageColorAvg));
 
 		if(!hasPages) {
-			builder.setColor(totalColorAvg);
+			builder.setColor(allPageColorAvg);
 		} else {
 			AverageColorCounter pageColor = new AverageColorCounter();
 			for(Role role : toSearch) {
@@ -566,38 +561,40 @@ public class TeamCommand implements CommandHandler {
 			builder.appendDescription("\nAverage Color (This Page): " + Utils.colorToString(pageColorAvg));
 
 			AverageColorCounter embedColor = new AverageColorCounter();
-			embedColor.addColor(totalColorAvg);
+			embedColor.addColor(allPageColorAvg);
 			embedColor.addColor(pageColorAvg);
 			builder.setColor(embedColor.average());
 		}
 
-		AtomicInteger done = new AtomicInteger();
 		int finalPage = page;
-		for(Role role : toSearch) {
-			Role owner = TeamRoleUtils.findOwnerRole(role);
-			if(owner == null) {
-				handleOwnerObtained(
-						userId, hook, sender,
-						role, null,
-						done, toSearch.size(),
-						builder,
-						hasPages, finalPage, maxPage,
-						showId
-				);
-				continue;
+		Thread.ofVirtual().start(() -> {
+			for(Role role : toSearch) {
+				Role ownerRole = TeamRoleUtils.findOwnerRole(role);
+				Long ownerId = ownerRole == null
+						? null
+						: Utils.getSafe(TeamRoleUtils.getRoleOwner(ownerRole)::join);
+
+				builder.appendDescription(makeTeamLine(role, ownerId, showId));
+				hook.setEmbeds(builder.build());
+				if(hasPages) {
+					var prev = Button.primary(
+							ButtonHandler.ID_TEAM_LIST_PAGE + "-" + finalPage + "-" + showId + "-" + userId,
+							"< Previous Page");
+					var next = Button.primary(
+							ButtonHandler.ID_TEAM_LIST_PAGE + "-" + (finalPage + 2) + "-" + showId + "-" + userId,
+							"Next Page >");
+
+					if(finalPage == 0) {
+						prev = prev.asDisabled();
+					} else if(finalPage == maxPage - 1) {
+						next = next.asDisabled();
+					}
+					hook.setActionRow(prev, next);
+				}
 			}
 
-			TeamRoleUtils.getRoleOwner(owner).whenComplete((ownerId, _) -> {
-				handleOwnerObtained(
-						userId, hook, sender,
-						role, ownerId,
-						done, toSearch.size(),
-						builder,
-						hasPages, finalPage, maxPage,
-						showId
-				);
-			});
-		}
+			sender.accept(hook);
+		});
 	}
 
 	private static List<Role> getTeamRoles(AverageColorCounter totalColor) {
@@ -616,42 +613,24 @@ public class TeamCommand implements CommandHandler {
 		return toSearch;
 	}
 
-	private static <T extends MessageRequest<?>> void handleOwnerObtained(String userId, T hook,
-	                                                                      Consumer<T> sender,
-	                                                                      Role role, Long ownerId,
-	                                                                      AtomicInteger done, int requestTotal,
-	                                                                      EmbedBuilder builder,
-	                                                                      boolean hasPages, int page, int maxPage,
-	                                                                      boolean showId) {
-		String line = "\n" + role.getAsMention();
+	private static String makeTeamLine(Role role, @Nullable Long ownerId, boolean showId) {
+		StringBuilder line = new StringBuilder("\n" + role.getAsMention());
 		if(showId) {
-			line += " (" + role.getId() + ")";
+			line.append(" (").append(role.getId()).append(")");
 		}
 
-		line += " owned by " + (ownerId == null ? "???" : "<@" + ownerId + ">");
+		line.append(" owned by ");
+		if(ownerId == null) {
+			line.append("???");
+		} else {
+			line.append("<@").append(ownerId).append(">");
+		}
+
 		if(ownerId != null && ownerId == 959062384419410011L) {
-			line += " (<-- this team cool)";
+			line.append(" (<-- this team cool)");
 		}
-		builder.appendDescription(line);
-		if(done.incrementAndGet() != requestTotal) return;
 
-		hook.setEmbeds(builder.build());
-		if(hasPages) {
-			var prev = Button.primary(
-					ButtonHandler.ID_TEAM_LIST_PAGE + "-" + page + "-" + showId + "-" + userId,
-					"< Previous Page");
-			var next = Button.primary(
-					ButtonHandler.ID_TEAM_LIST_PAGE + "-" + (page + 2) + "-" + showId + "-" + userId,
-					"Next Page >");
-
-			if(page == 0) {
-				prev = prev.asDisabled();
-			} else if(page == maxPage - 1) {
-				next = next.asDisabled();
-			}
-			hook.setActionRow(prev, next);
-		}
-		sender.accept(hook);
+		return line.toString();
 	}
 
 	static final Map<Long, LongSet> requestCooldowns = new HashMap<>();
