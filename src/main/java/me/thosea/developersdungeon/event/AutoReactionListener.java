@@ -80,7 +80,7 @@ public class AutoReactionListener extends ListenerAdapter {
 							VerifyCommand.verify(member, target, verifiedRole);
 						} else if(isNo) {
 							target.kick().reason("Staff denied verification").queue();
-							Utils.logMinor("%s denied verification for %s, kicking them", member, target);
+							Utils.logMajor("%s denied verification for %s, kicking them", member, target);
 						}
 					}, _ -> {});
 		});
