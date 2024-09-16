@@ -45,6 +45,8 @@ public class AutoReactionListener extends ListenerAdapter {
 
 	@Override
 	public void onMessageReactionAdd(MessageReactionAddEvent event) {
+		if(event.getUserIdLong() == Main.jda.getSelfUser().getIdLong()) return;
+
 		long id = event.getChannel().getIdLong();
 		if(id != Channels.SUGGESTIONS && id != Channels.VERIFY) return;
 
