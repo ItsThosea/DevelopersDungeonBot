@@ -26,7 +26,7 @@ public class UnverifiedCommand implements CommandHandler {
 		Role verifiedRole = Main.guild.getRoleById(Roles.VERIFIED);
 		event.deferReply().setEphemeral(true).queue(hook -> {
 			Main.guild.findMembers(user -> {
-				return !Utils.hasRole(user, verifiedRole) && !Utils.isAdmin(user);
+				return !Utils.hasRole(user, verifiedRole) && !Utils.isAdmin(user) && !user.getUser().isBot();
 			}).onSuccess(list -> {
 				if(list.isEmpty()) {
 					hook.editOriginal("Everybody here is verified!").queue();
