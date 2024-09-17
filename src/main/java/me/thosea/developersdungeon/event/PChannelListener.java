@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.events.guild.override.PermissionOverrideCreateEvent;
 import net.dv8tion.jda.api.events.guild.override.PermissionOverrideDeleteEvent;
 import net.dv8tion.jda.api.events.guild.override.PermissionOverrideUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -34,16 +35,17 @@ public class PChannelListener extends ListenerAdapter {
 	}
 
 	private void handleNewOverride(PermissionOverrideCreateEvent event, GuildMessageChannel channel, Member member) {
-		String name = member == null ? "???" : member.getAsMention();
 		PermissionOverride override = event.getPermissionOverride();
 
-		if(handleEveryoneAdd(channel, member, override, name)) return;
+		if(handleEveryoneAdd(member, channel, override)) {
+			return;
+		}
 
 		if(override.isRoleOverride()
 				&& override.getRole() != null
 				&& !TeamRoleUtils.isTeamRole(override.getRole())
 				&& (member == null || !Utils.isAdmin(member))) {
-			channel.sendMessage(name + " - you can't add non-team roles to your channel.")
+			channel.sendMessage(getName(member) + " - you can't add non-team roles to your channel.")
 					.setAllowedMentions(List.of())
 					.queue();
 
@@ -51,12 +53,12 @@ public class PChannelListener extends ListenerAdapter {
 					.removePermissionOverride(override.getIdLong())
 					.queue();
 			Utils.logMajor("%s tried to add permission override for non-team role %s in channel %s",
-					name,
+					member,
 					override.getRole().getAsMention(),
 					channel);
 		} else {
 			Utils.logMinor("%s added permission override for %s for channel %s",
-					name,
+					member,
 					getTargetName(event.getPermissionOverride()),
 					event.getChannel());
 		}
@@ -64,7 +66,7 @@ public class PChannelListener extends ListenerAdapter {
 		if(channel.getPermissionContainer()
 				.getPermissionOverrides().size() > 6 // 1 less to account for the user themselves
 				&& (member == null || !Utils.isAdmin(member))) {
-			Utils.logMajor("%s added over 5 permission overrides to %s", name, channel);
+			Utils.logMajor("%s added over 5 permission overrides to %s", member, channel);
 		}
 	}
 
@@ -74,35 +76,13 @@ public class PChannelListener extends ListenerAdapter {
 		if(!PChannelUtils.isPrivateChannel(channel)) return;
 
 		getUpdater(channel, ActionType.CHANNEL_OVERRIDE_UPDATE, member -> {
-			String name = member == null ? "???" : member.getAsMention();
-			PermissionOverride override = event.getPermissionOverride();
-
-			if(!handleEveryoneAdd(channel, member, override, name)) {
+			if(!handleEveryoneAdd(member, channel, event.getPermissionOverride())) {
 				Utils.logMinor("%s updated permission override for %s for channel %s",
-						name,
+						member,
 						getTargetName(event.getPermissionOverride()),
 						event.getChannel());
 			}
 		});
-	}
-
-	private boolean handleEveryoneAdd(GuildMessageChannel channel, Member member, PermissionOverride override, String name) {
-		if(!override.isRoleOverride()
-				|| !Main.guild.getPublicRole().equals(override.getRole())
-				|| (member != null && Utils.isAdmin(member))) {
-			return false;
-		}
-
-		channel.getPermissionContainer().getManager().putPermissionOverride(
-				Main.guild.getPublicRole(),
-				null,
-				Set.of(Permission.VIEW_CHANNEL)).queue();
-		Utils.logMajor("%s tried to add permission override for @everyone in channel %s",
-				name, channel);
-		channel.sendMessage(name + " - you can't add @everyone to your channel.")
-				.setAllowedMentions(List.of())
-				.queue();
-		return true;
 	}
 
 	@Override
@@ -111,12 +91,9 @@ public class PChannelListener extends ListenerAdapter {
 		if(!PChannelUtils.isPrivateChannel(channel)) return;
 
 		getUpdater(channel, ActionType.CHANNEL_OVERRIDE_DELETE, member -> {
-			String name = member == null ? "???" : member.getAsMention();
-			PermissionOverride override = event.getPermissionOverride();
-
-			if(!handleEveryoneAdd(channel, member, override, name)) {
+			if(!handleEveryoneAdd(member, channel, event.getPermissionOverride())) {
 				Utils.logMinor("%s removed permission override for %s for channel %s",
-						name,
+						member,
 						getTargetName(event.getPermissionOverride()),
 						event.getChannel());
 			}
@@ -131,15 +108,44 @@ public class PChannelListener extends ListenerAdapter {
 		}
 	}
 
-	private void getUpdater(Channel channel, ActionType action, Consumer<Member> handler) {
-		OffsetDateTime lowerTimeThreshold = OffsetDateTime.now().minusSeconds(8);
+	private boolean handleEveryoneAdd(Member member, GuildMessageChannel channel, PermissionOverride override) {
+		if(!override.isRoleOverride()
+				|| !Main.guild.getPublicRole().equals(override.getRole())
+				|| (member != null && Utils.isAdmin(member))) {
+			return false;
+		}
 
-		Main.guild.retrieveAuditLogs().type(action).queue(logs -> {
+		channel.getPermissionContainer().getManager().putPermissionOverride(
+						Main.guild.getPublicRole(),
+						null, // allowed
+						Set.of(Permission.VIEW_CHANNEL)) // denied
+				.queue();
+		Utils.logMajor("%s tried to add permission override for @everyone in channel %s", member, channel);
+		channel.sendMessage(getName(member) + " - you can't add @everyone to your channel.")
+				.setAllowedMentions(List.of())
+				.queue();
+		return true;
+	}
+
+	private String getName(@Nullable Member member) {
+		return member == null ? "???" : member.getAsMention();
+	}
+
+	private void getUpdater(Channel channel, ActionType action, Consumer<Member> handler) {
+		OffsetDateTime timeMinimum = OffsetDateTime.now().minusSeconds(8);
+
+		Thread.ofVirtual().start(() -> {
+			List<AuditLogEntry> logs = Utils.getSafe(Main.guild.retrieveAuditLogs().type(action)::complete);
+			if(logs == null) {
+				handler.accept(null);
+				return;
+			}
+
 			for(AuditLogEntry log : logs) {
 				if(log.getTargetType() != TargetType.CHANNEL) continue;
 				if(log.getTargetIdLong() != channel.getIdLong()) continue;
 
-				if(log.getTimeCreated().isBefore(lowerTimeThreshold)) {
+				if(log.getTimeCreated().isBefore(timeMinimum)) {
 					// If that's the oldest one, then there probably wasn't a log for it.
 					// Or the internet is just really delayed.
 					break;
@@ -150,13 +156,7 @@ public class PChannelListener extends ListenerAdapter {
 				if(id == Main.jda.getSelfUser().getIdLong()) {
 					handler.accept(Main.guild.getSelfMember());
 				} else {
-					Member member = Main.guild.getMemberById(id);
-					if(member != null) { // if they're in our cache
-						handler.accept(member);
-					} else {
-						Main.guild.retrieveMemberById(log.getUserIdLong())
-								.queue(handler, _ -> handler.accept(null));
-					}
+					handler.accept(Utils.getSafe(Main.guild.retrieveMemberById(id)::complete));
 				}
 				return;
 			}
