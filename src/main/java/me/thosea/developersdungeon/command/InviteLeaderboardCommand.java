@@ -18,7 +18,6 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
-import net.dv8tion.jda.api.requests.RestAction;
 
 import java.awt.Color;
 import java.util.Comparator;
@@ -40,24 +39,24 @@ public class InviteLeaderboardCommand implements CommandHandler {
 			return;
 		}
 
-		event.deferReply().queue(hook -> Main.guild.retrieveInvites().queue(invites -> {
-			makeResponse(hook, invites);
-		}));
+		event.deferReply().queue(hook -> {
+			Thread.ofVirtual().start(() -> {
+				respond(hook, Main.guild.retrieveInvites().complete());
+			});
+		});
 	}
 
-	public static void makeResponse(InteractionHook hook, List<Invite> list) {
-		Long2IntOpenHashMap map = new Long2IntOpenHashMap();
+	private void respond(InteractionHook hook, List<Invite> list) {
+		Long2IntOpenHashMap inviteCounts = new Long2IntOpenHashMap();
 		LongSet multipleInvites = new LongOpenHashSet();
-
 		AverageColorCounter colorCounter = new AverageColorCounter();
-		RestAction<?> actions = null;
 
 		for(Invite invite : list) {
 			if(invite.getInviter() == null) continue;
 			int uses = invite.getUses();
 			if(uses < 1) continue;
 
-			map.compute(invite.getInviter().getIdLong(), (_, num) -> {
+			inviteCounts.compute(invite.getInviter().getIdLong(), (_, num) -> {
 				if(num == null) {
 					return uses;
 				} else {
@@ -66,64 +65,55 @@ public class InviteLeaderboardCommand implements CommandHandler {
 				}
 			});
 
-			RestAction<Member> action = Main.guild.retrieveMember(invite.getInviter());
-			action = action.onSuccess(member -> {
-				if(member == null) return;
-				TeamRolePair pair = TeamRoleUtils.getTeamRoles(member);
-				if(pair.baseRole() == null) return;
-
+			Member member = Utils.getSafe(Main.guild.retrieveMember(invite.getInviter())::complete);
+			TeamRolePair pair = member == null ? null : TeamRoleUtils.getTeamRoles(member);
+			if(pair != null && pair.baseRole() != null)
 				colorCounter.addColor(pair.baseRole().getColor());
-			});
-
-			actions = (actions == null) ? action : actions.and(action);
 		}
 
-		if(actions == null) {
+		if(inviteCounts.isEmpty()) {
 			hook.editOriginal("None to display.").queue();
 			return;
 		}
 
-		actions.queue(_ -> {
-			StringBuilder builder = new StringBuilder();
+		StringBuilder builder = new StringBuilder();
 
-			map.long2IntEntrySet()
-					.stream()
-					.sorted(Comparator.comparingInt(Entry::getIntValue).reversed())
-					.forEach(entry -> {
-						builder.append('\n');
-						builder.append("<@").append(entry.getLongKey()).append(">");
+		inviteCounts.long2IntEntrySet().stream()
+				.sorted(Comparator.comparingInt(Entry::getIntValue).reversed())
+				.forEach(entry -> {
+					builder.append('\n');
+					builder.append("<@").append(entry.getLongKey()).append(">");
 
-						builder.append(" made ");
-						if(multipleInvites.contains(entry.getLongKey())) {
-							builder.append(" invites ");
-						} else {
-							builder.append(" an invite ");
-						}
-						builder.append(" with ");
+					builder.append(" made ");
+					if(multipleInvites.contains(entry.getLongKey())) {
+						builder.append(" invites ");
+					} else {
+						builder.append(" an invite ");
+					}
+					builder.append(" with ");
 
-						int uses = entry.getIntValue();
-						builder.append(uses).append(" use").append(uses == 1 ? "" : "s");
-					});
+					int uses = entry.getIntValue();
+					builder.append(uses).append(" use").append(uses == 1 ? "" : "s");
+				});
 
-			Color color;
-			if(colorCounter.factors() > 0) {
-				color = colorCounter.average();
+		Color color;
+		if(colorCounter.factors() > 0) {
+			color = colorCounter.average();
 
-				builder.append("\nWeighted Team Color *(weight based on invite uses)*: ")
-						.append(Utils.colorToString(color));
-			} else {
-				color = Utils.randomColor();
-			}
+			builder.append("\nWeighted Team Color *(weight based on invite uses)*: ")
+					.append(Utils.colorToString(color));
+		} else {
+			color = Utils.randomColor();
+		}
 
-			if(builder.length() > MessageEmbed.DESCRIPTION_MAX_LENGTH) {
-				hook.editOriginal("Too long to display!").queue();
-			} else {
-				hook.editOriginalEmbeds(new EmbedBuilder()
-						.setTitle("Invites:")
-						.setDescription(builder.toString())
-						.setColor(color)
-						.build()).queue();
-			}
-		});
+		if(builder.length() > MessageEmbed.DESCRIPTION_MAX_LENGTH) {
+			hook.editOriginal("Too long to display!").queue();
+		} else {
+			hook.editOriginalEmbeds(new EmbedBuilder()
+					.setTitle("Invites:")
+					.setDescription(builder.toString())
+					.setColor(color)
+					.build()).queue();
+		}
 	}
 }
