@@ -33,7 +33,7 @@ public class UnverifiedCommand implements CommandHandler {
 					return;
 				}
 
-				var channel = Main.guild.getTextChannelById(Channels.VERIFY);
+				TextChannel channel = Main.guild.getTextChannelById(Channels.VERIFY);
 				if(channel == null) {
 					handleList(hook, list, null, null);
 				} else {
@@ -41,6 +41,10 @@ public class UnverifiedCommand implements CommandHandler {
 						handleList(hook, list, channel, messages);
 					});
 				}
+			}).onError(e -> {
+				System.err.println("Error getting unverified members");
+				e.printStackTrace();
+				hook.editOriginal("Error getting unverified members: " + e).queue();
 			});
 		});
 	}

@@ -91,7 +91,7 @@ public class MakeChannelCommand implements CommandHandler {
 	private static void handleNewChannel(Member member, InteractionHook hook,
 	                                     StandardGuildChannel channel,
 	                                     Message msg, String type,
-	                                     String[] split) {
+	                                     String[] mentions) {
 		if(channel instanceof TextChannel text) {
 			text.pinMessageById(msg.getIdLong()).queue();
 		}
@@ -115,41 +115,44 @@ public class MakeChannelCommand implements CommandHandler {
 			});
 		}
 
-		if(split != null) {
-			String errorMessage = """
-					Made your %s channel > %s
-					*Note: Some of the users/roles you specified weren't added because
-					they either weren't valid members or weren't team roles.
-					""".formatted(type, channel.getAsMention());
-
-			for(String mention : split) {
-				if(mention.startsWith("<@&")) {
-					mention = mention.substring(3, mention.length() - 1);
-
-					Role role = Main.guild.getRoleById(mention);
-					if(role == null || !TeamRoleUtils.isTeamRole(role)) {
-						hook.editOriginal(errorMessage).queue();
-					} else {
-						channel.upsertPermissionOverride(role)
-								.grant(Permission.VIEW_CHANNEL)
-								.queue();
-					}
-				} else {
-					mention = mention.substring(2, mention.length() - 1);
-					Main.guild.retrieveMemberById(mention).queue(toAdd -> {
-						channel.upsertPermissionOverride(toAdd)
-								.grant(Permission.VIEW_CHANNEL)
-								.queue();
-					}, _ -> hook.editOriginal(errorMessage).queue());
-				}
-			}
-		}
-
 		channel.upsertPermissionOverride(member)
 				.grant(Permission.VIEW_CHANNEL, Permission.MANAGE_PERMISSIONS, Permission.MANAGE_WEBHOOKS)
-				.flatMap(_ -> hook.editOriginal("Made your " + type + " channel > " + channel.getAsMention()))
 				.queue();
-
+		hook.editOriginal("Made your " + type + " channel > " + channel.getAsMention()).queue();
 		Utils.logChannel("%s made %s channel %s", member, type, channel);
+
+		if(mentions == null) {
+			return;
+		}
+
+		String errorMessage = """
+				Made your %s channel > %s
+				*Note: Some of the users/roles you specified weren't added because
+				they weren't valid members or valid team roles.
+				""".formatted(type, channel.getAsMention());
+
+		for(String mention : mentions) {
+			if(mention.startsWith("<@&")) { // role
+				mention = mention.substring(3, mention.length() - 1);
+
+				Role role = Main.guild.getRoleById(mention);
+				if(role == null || !TeamRoleUtils.isTeamRole(role)) {
+					hook.editOriginal(errorMessage).queue();
+				} else {
+					channel.upsertPermissionOverride(role)
+							.grant(Permission.VIEW_CHANNEL)
+							.reason("added by @" + member.getUser().getName())
+							.queue();
+				}
+			} else { // user
+				mention = mention.substring(2, mention.length() - 1);
+				Main.guild.retrieveMemberById(mention).queue(user -> {
+					channel.upsertPermissionOverride(user)
+							.grant(Permission.VIEW_CHANNEL)
+							.reason("added by @" + member.getUser().getName())
+							.queue();
+				}, _ -> hook.editOriginal(errorMessage).queue());
+			}
+		}
 	}
 }
