@@ -7,7 +7,6 @@ import me.thosea.developersdungeon.util.Constants.Channels;
 import me.thosea.developersdungeon.util.Constants.Emojis;
 import me.thosea.developersdungeon.util.ForumUtils;
 import me.thosea.developersdungeon.util.Utils;
-import net.dv8tion.jda.api.entities.Invite;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReaction;
@@ -64,21 +63,14 @@ public class DebugCommand implements CommandHandler {
 				handleOpcode2(hook, args);
 			});
 		} else if(opcode == 3) {
-			event.deferReply()
-					.setEphemeral(true)
-					.queue(hook -> Main.guild.retrieveInvites().queue(list -> {
-						handleOpcode3(hook, list);
-					}));
-		} else if(opcode == 4) {
-			handleOpcode4(event, args);
+			handleOpcode3(event, args);
 		} else {
 			event.reply("""
 							Invalid opcodes. Opcodes:
 							0: Resend state message
 							1: Delete commission request forum post
 							2: Toggle role (user, role)
-							3: List invites (ephemeral)
-							4: Irresistible SMP suggestion (type)
+							3: Irresistible SMP suggestion (type)
 							""")
 					.setEphemeral(true)
 					.queue();
@@ -206,11 +198,7 @@ public class DebugCommand implements CommandHandler {
 		}, _ -> hook.editOriginal("No person found").queue());
 	}
 
-	private void handleOpcode3(InteractionHook hook, List<Invite> list) {
-		InviteLeaderboardCommand.makeResponse(hook, list);
-	}
-
-	private void handleOpcode4(SlashCommandInteraction event, String[] args) {
+	private void handleOpcode3(SlashCommandInteraction event, String[] args) {
 		if(args.length < 1) {
 			event.reply("Invalid args").setEphemeral(true).queue();
 			return;
