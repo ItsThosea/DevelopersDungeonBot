@@ -126,10 +126,10 @@ public final class TeamRoleUtils {
 
 			Main.guild.findMembersWithRoles(role).setTimeout(15, TimeUnit.SECONDS).onSuccess(list -> {
 				future.complete(list.size() == 1 ? list.getFirst().getIdLong() : null);
-			}).onError(err -> {
+			}).onError(e -> {
 				System.err.println("Error getting team owner");
-				err.printStackTrace();
-				future.completeExceptionally(err);
+				e.printStackTrace();
+				future.completeExceptionally(e);
 			});
 
 			return future;
