@@ -148,20 +148,17 @@ public class ChannelThreadCounter {
 					if(thread != null) thread.delete().queue();
 				}
 			}
-		}
 
-		if(foundMessage) {
-			writeLastThreadedMessages();
+			if(foundMessage) {
+				writeLastThreadedMessages();
+			}
 		}
 	}
 
 	private void writeLastThreadedMessages() {
-		JsonArray array;
-		synchronized(lastThreadedMessages) {
-			array = new JsonArray(lastThreadedMessages.size());
-			for(Iterator<ThreadEntry> it = lastThreadedMessages.descendingIterator(); it.hasNext(); ) {
-				array.add(it.next().serialize());
-			}
+		JsonArray array = new JsonArray(lastThreadedMessages.size());
+		for(Iterator<ThreadEntry> it = lastThreadedMessages.descendingIterator(); it.hasNext(); ) {
+			array.add(it.next().serialize());
 		}
 
 		try {
