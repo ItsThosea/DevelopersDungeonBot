@@ -14,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.Iterator;
 
@@ -34,7 +33,7 @@ public class ChannelThreadCounter {
 	public ChannelThreadCounter(String id, String namePrefix, boolean showAuthorName) {
 		this.namePrefix = namePrefix + " #";
 		this.showAuthorName = showAuthorName;
-		this.lastThreadedMessagesJson = Paths.get("./devdungeon_autothread_" + id + ".json");
+		this.lastThreadedMessagesJson = Main.DATA_DIR.resolve("autothread_" + id + ".json");
 
 		long countMessageId = Constants.id("counts." + id + "_message");
 		long sourceChannel = Constants.id("counts." + id + "_channel");

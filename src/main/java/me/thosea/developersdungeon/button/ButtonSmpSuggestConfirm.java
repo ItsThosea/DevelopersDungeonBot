@@ -16,7 +16,6 @@ import net.dv8tion.jda.api.utils.messages.MessagePollData;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -25,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class ButtonSmpSuggestConfirm implements ButtonHandler {
-	private static final Path SUGGESTED_MODS_FILE = Paths.get("./devdungeon_suggested_mods.json");
+	private static final Path SUGGESTED_MODS_FILE = Main.DATA_DIR.resolve("suggested_mods.json");
 	private static final Executor FILE_READER_SERVICE = Executors.newSingleThreadExecutor();
 
 	@Override
