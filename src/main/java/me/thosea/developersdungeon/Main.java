@@ -36,6 +36,9 @@ import okhttp3.OkHttpClient;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -63,6 +66,8 @@ public final class Main {
 
 	public static JDA jda;
 	public static Guild guild;
+
+	public static final Path DATA_DIR = Paths.get("./devsdungeon_data");
 
 	@Nullable public static TextChannel generalChannel;
 	@Nullable public static TextChannel minorLogChannel;
@@ -104,6 +109,11 @@ public final class Main {
 				new AutoThreadListener(),
 				new IrresistibleSuggestionMessageListener());
 		jda.updateCommands().addCommands(CommandHandler.buildCommands()).queue();
+
+		if(!Files.isDirectory(DATA_DIR)) {
+			throw new IllegalStateException("No directory at " + DATA_DIR.toAbsolutePath());
+		}
+		System.out.println("Data directory: " + DATA_DIR.toAbsolutePath());
 
 		scheduleCurseforgePing();
 
