@@ -161,12 +161,14 @@ public class ChannelThreadCounter {
 			array.add(it.next().serialize());
 		}
 
-		try {
-			Files.writeString(lastThreadedMessagesJson, Utils.GSON.toJson(array));
-		} catch(Exception e) {
-			System.err.println("Failed to write channel thread counter message stack to " + lastThreadedMessagesJson.toAbsolutePath());
-			e.printStackTrace();
-		}
+		Thread.ofVirtual().start(() -> {
+			try {
+				Files.writeString(lastThreadedMessagesJson, Utils.GSON.toJson(array));
+			} catch(Exception e) {
+				System.err.println("Failed to write channel thread counter message stack to " + lastThreadedMessagesJson.toAbsolutePath());
+				e.printStackTrace();
+			}
+		});
 	}
 
 	public void setCount(int count) {
