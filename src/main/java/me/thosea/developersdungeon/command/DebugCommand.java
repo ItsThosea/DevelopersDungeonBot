@@ -11,7 +11,9 @@ import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
+import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -21,6 +23,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -144,20 +147,34 @@ public class DebugCommand implements CommandHandler {
 	}
 
 	private void handleOpcode1(SlashCommandInteraction event) {
-		var channel = event.getChannel();
+		MessageChannel channel = event.getChannel();
 
 		if(!ForumUtils.isCommissionRequest(channel)) {
 			event.reply("Not a commission request channel").setEphemeral(true).queue();
 			return;
 		}
 
-		ButtonListener.doDebugMessage(
-				event,
-				"Really delete this forum post completely?",
-				false,
-				id -> Button.danger(id, "Delete"),
-				_ -> channel.delete().queue() // no need to respond
-		);
+		String id = ButtonListener.createDebugButtonId();
+
+		event.reply("Really delete this forum post completely?")
+				.setActionRow(Button.danger(id, "Delete"))
+				.queue(msg -> {
+					Main.jda.listenOnce(ButtonInteractionEvent.class)
+							.filter(e -> id.equals(e.getButton().getId()))
+							.filter(e -> {
+								if(Constants.ADMINS.contains(e.getUser().getIdLong())) {
+									return true;
+								} else {
+									e.reply("You can't do that.").setEphemeral(true).queue();
+									return false;
+								}
+							})
+							.timeout(Duration.ofSeconds(30), () -> msg.deleteOriginal().queue())
+							.subscribe(_ -> {
+								channel.delete().queue();
+								// no need to respond
+							});
+				});
 	}
 
 	private void handleOpcode2(InteractionHook hook, String[] args) {

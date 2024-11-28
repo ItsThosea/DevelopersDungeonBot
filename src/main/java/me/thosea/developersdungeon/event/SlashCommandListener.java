@@ -15,7 +15,7 @@ public class SlashCommandListener extends ListenerAdapter {
 	@Override
 	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
 		if(event.getMember() == null) {
-			// Never runs, commands are guild-only
+			// never runs, commands are guild-only
 			return;
 		}
 
@@ -24,7 +24,7 @@ public class SlashCommandListener extends ListenerAdapter {
 		if(handler != null) {
 			long id = event.getMember().getIdLong();
 			if(COOLDOWNS.contains(id)) {
-				// Spamming messes with some commands
+				// spamming messes with some commands because of request delays
 				event.reply("You can't execute commands that fast!")
 						.setEphemeral(true)
 						.queue();

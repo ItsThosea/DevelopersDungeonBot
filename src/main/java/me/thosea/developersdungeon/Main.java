@@ -3,7 +3,6 @@ package me.thosea.developersdungeon;
 import me.thosea.developersdungeon.command.CommandHandler;
 import me.thosea.developersdungeon.event.AutoThreadListener;
 import me.thosea.developersdungeon.event.ButtonListener;
-import me.thosea.developersdungeon.event.EchoMessageListener;
 import me.thosea.developersdungeon.event.ForumListener;
 import me.thosea.developersdungeon.event.IrresistibleSuggestionMessageListener;
 import me.thosea.developersdungeon.event.LeaveListener;
@@ -96,7 +95,6 @@ public final class Main {
 
 		jda.addEventListener(
 				new SlashCommandListener(),
-				new EchoMessageListener(),
 				new ForumListener(),
 				new ButtonListener(),
 				new ModalResponseListener(),
