@@ -135,7 +135,7 @@ public final class Main {
 			System.out.println("No counts channel. Auto-threading will be disabled.");
 		}
 		if((votingChannel = guild.getTextChannelById(Channels.VOTING)) == null) {
-			System.out.println("No voting channel. /smpsuggest will be disabled.");
+			System.out.println("No voting channel. /smpsuggestion will be disabled.");
 		}
 
 		if((teamRoleSandwichTop = guild.getRoleById(Roles.TEAM_ROLE_SANDWICH_TOP)) == null) {
