@@ -15,7 +15,6 @@ import me.thosea.developersdungeon.event.SlashCommandListener;
 import me.thosea.developersdungeon.other.ChannelThreadCounter;
 import me.thosea.developersdungeon.util.Constants;
 import me.thosea.developersdungeon.util.Constants.Channels;
-import me.thosea.developersdungeon.util.Constants.MessageContent;
 import me.thosea.developersdungeon.util.Constants.Roles;
 import me.thosea.developersdungeon.util.TeamRoleUtils;
 import me.thosea.developersdungeon.util.Utils;
@@ -25,8 +24,6 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildMessageChannel;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -37,12 +34,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -111,37 +103,8 @@ public final class Main {
 		}
 		System.out.println("Data directory: " + DATA_DIR.toAbsolutePath());
 
-		scheduleCurseforgePing();
-
 		// Fill up cache
 		guild.getRoles().stream().filter(TeamRoleUtils::isTeamOwnerRole).forEach(TeamRoleUtils::getRoleOwner);
-	}
-
-	private static void scheduleCurseforgePing() {
-		GuildMessageChannel channel = guild.getChannelById(GuildMessageChannel.class, Channels.ANNOUNCEMENTS);
-		if(channel == null) {
-			System.out.println("No valid announcements channel, won't schedule curseforge project ping.");
-			return;
-		}
-
-		long time = Utils.getNextCurseforgePingTime();
-
-		LocalDateTime dateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault());
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy 'at' HH:mm");
-		Utils.logMinor("Next CF payout ping scheduled at %s", dateTime.format(formatter));
-
-		Utils.doLater(TimeUnit.MILLISECONDS, time - System.currentTimeMillis(), () -> {
-			String msg = """
-					**We're close to the end of the month!** Don't forget to cash out the CurseForge rewards before the month ends.
-					
-					%s https://authors.curseforge.com/#/reward-store
-					
-					%s
-					""".formatted(Emoji.fromUnicode("U+1F449"), MessageContent.CF_PING);
-
-			channel.sendMessage(msg).queue();
-			Utils.doLater(TimeUnit.MILLISECONDS, 2, Main::scheduleCurseforgePing);
-		});
 	}
 
 	private static void guildReady(GuildReadyEvent event) {
