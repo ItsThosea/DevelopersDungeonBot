@@ -74,8 +74,7 @@ public class ModalResponseListener extends ListenerAdapter {
 						member,
 						args[1],
 						content, reason,
-						hook,
-						Boolean.parseBoolean(args[2])
+						hook
 				);
 			});
 		}

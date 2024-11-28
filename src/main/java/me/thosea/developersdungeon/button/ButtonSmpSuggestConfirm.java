@@ -36,7 +36,6 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 	public void handle(Member member, ButtonInteractionEvent event, String[] args) {
 		MessageEmbed embed = event.getMessage().getEmbeds().getFirst();
 		List<Field> fields = embed.getFields();
-		boolean irresistible = Boolean.parseBoolean(args[2]);
 
 		if(args[0].equals("deny")) {
 			event.reply("Then so be it.")
@@ -48,8 +47,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 			event.replyModal(SmpSuggestionCommand.createModal(
 							args[1],
 							fields.get(0).getValue(),
-							fields.get(1).getValue(),
-							irresistible
+							fields.get(1).getValue()
 					))
 					.and(event.getMessage().delete())
 					.queue(_ -> {}, _ -> {});
@@ -67,6 +65,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 
 		event.deferReply().setEphemeral(true).queue(hook -> {
 			if((type.equals("mod") || type.equals("pack"))) {
+				// duplicate check
 				String url = embed.getFields().getFirst().getValue();
 				if(!Utils.isValidUrl(url)) {
 					hook.editOriginal("That is not a valid URL.").queue();
@@ -75,7 +74,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 
 				FILE_READER_SERVICE.execute(() -> {
 					try {
-						readFile(url, event.getMessage(), irresistible, type, hook);
+						readFile(url, event.getMessage(), type, hook);
 					} catch(Exception e) {
 						System.err.println("Error reading file " + SUGGESTED_MODS_FILE.toAbsolutePath());
 						e.printStackTrace();
@@ -90,7 +89,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 				String title = type.equals("config")
 						? "Config Suggestion - " + fields.get(0).getValue()
 						: member.getEffectiveName() + "'s Suggestion";
-				sendMessage(event.getMessage(), hook, irresistible, title, null);
+				sendMessage(event.getMessage(), hook, title, null);
 			}
 		});
 
@@ -112,7 +111,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 	private static final String PACK_BAD_URL = "Not a link to a CurseForge/Modrinth resourcepack, datapack or shaderpack.";
 
 	private void readFile(String url, Message msg,
-	                      boolean irresistible, String type,
+	                      String type,
 	                      InteractionHook hook) throws Exception {
 		boolean isMod = type.equals("mod");
 		Iterator<String> keywordIterator = (isMod ? URL_KEYWORDS_MOD : URL_KEYWORDS_PACK).iterator();
@@ -135,11 +134,6 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 
 		String title = (type.equals("mod") ? "Mod" : "Pack") + " Suggestion - " + modid;
 
-		if(irresistible) {
-			sendMessage(msg, hook, true, title, null);
-			return;
-		}
-
 		JsonObject object;
 		if(!Files.exists(SUGGESTED_MODS_FILE)) {
 			object = new JsonObject();
@@ -150,7 +144,7 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		if(object.get(modid) instanceof JsonPrimitive link) {
 			hook.editOriginal("This was already suggested: " + link.getAsString()).queue();
 		} else {
-			sendMessage(msg, hook, false, title, msgUrl -> {
+			sendMessage(msg, hook, title, msgUrl -> {
 				object.addProperty(modid, msgUrl);
 				try {
 					Files.writeString(SUGGESTED_MODS_FILE, Utils.GSON.toJson(object));
@@ -169,18 +163,14 @@ public class ButtonSmpSuggestConfirm implements ButtonHandler {
 		}
 	}
 
-	private void sendMessage(Message msg, InteractionHook hook,
-	                         boolean irresistible, String title, Consumer<String> urlHandler) {
+	private void sendMessage(Message msg, InteractionHook hook, String title, Consumer<String> urlHandler) {
 		assert Main.votingChannel != null; // checked when running command
 
 		Main.votingChannel
 				.sendMessageEmbeds(msg.getEmbeds().getFirst())
 				.setPoll(MessagePollData.builder(title)
 						.addAnswer("Yes", Utils.EMOJI_YES)
-						.addAnswer(
-								irresistible ? "Definitely!" : "Nuh uh!",
-								irresistible ? Utils.EMOJI_SMILE : Utils.EMOJI_NO
-						)
+						.addAnswer("Nuh uh!", Utils.EMOJI_NO)
 						.setDuration(1, TimeUnit.DAYS)
 						.build())
 				.queue(voteMsg -> {

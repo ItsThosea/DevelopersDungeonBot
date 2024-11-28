@@ -4,7 +4,6 @@ import me.thosea.developersdungeon.command.CommandHandler;
 import me.thosea.developersdungeon.event.AutoThreadListener;
 import me.thosea.developersdungeon.event.ButtonListener;
 import me.thosea.developersdungeon.event.ForumListener;
-import me.thosea.developersdungeon.event.IrresistibleSuggestionMessageListener;
 import me.thosea.developersdungeon.event.LeaveListener;
 import me.thosea.developersdungeon.event.LogMessageListener;
 import me.thosea.developersdungeon.event.ModalResponseListener;
@@ -104,8 +103,7 @@ public final class Main {
 				new ReactionListener(),
 				new PingResponseMessageListener(),
 				new RoleRemoveEvent(),
-				new AutoThreadListener(),
-				new IrresistibleSuggestionMessageListener());
+				new AutoThreadListener());
 		jda.updateCommands().addCommands(CommandHandler.buildCommands()).queue();
 
 		if(!Files.isDirectory(DATA_DIR)) {

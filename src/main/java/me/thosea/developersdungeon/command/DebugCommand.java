@@ -3,18 +3,12 @@ package me.thosea.developersdungeon.command;
 import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.event.ButtonListener;
 import me.thosea.developersdungeon.util.Constants;
-import me.thosea.developersdungeon.util.Constants.Channels;
-import me.thosea.developersdungeon.util.Constants.Emojis;
 import me.thosea.developersdungeon.util.ForumUtils;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
@@ -24,7 +18,6 @@ import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
 import java.time.Duration;
-import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -65,69 +58,15 @@ public class DebugCommand implements CommandHandler {
 			event.deferReply().setEphemeral(true).queue(hook -> {
 				handleOpcode2(hook, args);
 			});
-		} else if(opcode == 3) {
-			handleOpcode3(event, args);
 		} else {
 			event.reply("""
 							Invalid opcodes. Opcodes:
 							0: Resend state message
 							1: Delete commission request forum post
 							2: Toggle role (user, role)
-							3: Irresistible SMP suggestion (type)
 							""")
 					.setEphemeral(true)
 					.queue();
-		}
-	}
-
-	public static boolean isIrresistiblePoll(Message msg) {
-		if(msg.getChannel().getIdLong() != Channels.VOTING) return false;
-		if(msg.getAuthor().getIdLong() != Main.jda.getSelfUser().getIdLong()) return false;
-		if(msg.getPoll() == null) return false;
-		if(msg.getPoll().getAnswers().size() != 2) return false;
-		if(!Utils.EMOJI_SMILE.equals(msg.getPoll().getAnswers().get(1).getEmoji()))
-			return false;
-
-		return true;
-	}
-
-	private static final List<Emoji> IRRESISTIBLE_REACTIONS = List.of(
-			Emoji.fromUnicode("U+2705"), // green checkmark
-			Emoji.fromUnicode("U+1F44D"), // thumbs up
-			Emoji.fromUnicode("U+1F525"), // fire
-			Emoji.fromUnicode("U+1F64B"), // person raising hand
-			Emojis.YEAH,
-			Emoji.fromUnicode("U+2764"), // heart
-			Emoji.fromUnicode("U+1F49F"), // heart decoration
-			Emoji.fromUnicode("U+1FAF6"), // heart hands
-			Emoji.fromUnicode("U+1F497"), // heart pulse
-			Emoji.fromUnicode("U+1F4AF"), // 100
-			Emoji.fromUnicode("U+1F44C"), // ok hand
-			Emoji.fromUnicode("U+1F44F"), // clap
-			Emoji.fromUnicode("U+1F1FE"), // Y
-			Emoji.fromUnicode("U+1F1EA"), // E
-			Emoji.fromUnicode("U+1F1F8"), // S
-			Emoji.fromUnicode("U+203C"), // !
-			Emojis.KEOIKI
-	);
-
-	public static void handleReactionOnIrresistiblePoll(Message checkMsg,
-	                                                    Message targetMsg,
-	                                                    MessageReactionAddEvent event) {
-		if(event.getUserIdLong() == Main.jda.getSelfUser().getIdLong()) return;
-		if(!isIrresistiblePoll(checkMsg)) return;
-		if(Constants.ADMINS.contains(event.getUserIdLong())) return;
-		if(IRRESISTIBLE_REACTIONS.contains(event.getEmoji())) return;
-
-		targetMsg.removeReaction(event.getEmoji(), event.getUser()).queue();
-		if(targetMsg.getReactions().size() - 1 >= 20) return; // max limit
-
-		List<? extends Emoji> reacted = targetMsg.getReactions().stream().map(MessageReaction::getEmoji).toList();
-		for(Emoji emoji : IRRESISTIBLE_REACTIONS) {
-			if(!reacted.contains(emoji)) {
-				targetMsg.addReaction(emoji).queue();
-				break;
-			}
 		}
 	}
 
@@ -213,17 +152,5 @@ public class DebugCommand implements CommandHandler {
 					_ -> hook.editOriginal("Done (" + (!hadRole ? "GAVE" : "REMOVED") + ")").queue(),
 					err -> hook.editOriginal("Failed: " + err).queue());
 		}, _ -> hook.editOriginal("No person found").queue());
-	}
-
-	private void handleOpcode3(SlashCommandInteraction event, String[] args) {
-		if(args.length < 1) {
-			event.reply("Invalid args").setEphemeral(true).queue();
-			return;
-		}
-
-		event.replyModal(SmpSuggestionCommand.createModal(
-				String.join(" ", args),
-				null, null, true
-		)).queue();
 	}
 }
