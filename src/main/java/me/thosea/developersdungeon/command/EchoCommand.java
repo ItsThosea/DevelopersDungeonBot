@@ -1,12 +1,16 @@
 package me.thosea.developersdungeon.command;
 
+import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Message.Attachment;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.entities.channel.Channel;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandInteraction;
@@ -14,16 +18,17 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import net.dv8tion.jda.api.utils.FileUpload;
+import net.dv8tion.jda.api.utils.concurrent.Task;
 
 import java.awt.Color;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class EchoCommand implements CommandHandler {
-	public static final Long2ObjectOpenHashMap<EchoEntry> ECHOS = new Long2ObjectOpenHashMap<>();
+	private static final Long2ObjectOpenHashMap<Pair<InteractionHook, Task<?>>> ECHOS = new Long2ObjectOpenHashMap<>();
 
 	@Override
 	public SlashCommandData makeCommandData() {
@@ -49,42 +54,37 @@ public class EchoCommand implements CommandHandler {
 			return;
 		}
 
-		EchoEntry removed;
-		if((removed = ECHOS.remove(member.getIdLong())) != null) {
-			removed.messageDeleter.run();
-		}
+		this.endEcho(member);
 
-		BiConsumer<Member, Message> echoHandler;
-		String reply;
+		Consumer<Message> echoHandler;
+		String replyMsg;
 
 		if("message".equalsIgnoreCase(event.getSubcommandName())) {
-			echoHandler = EchoCommand::handleEchoMessage;
-			reply = "your next message in this channel within 3 minutes will be deleted and echoed by me.";
+			echoHandler = msg -> handleEchoMessage(member, msg);
+			replyMsg = "your next message in this channel within 3 minutes will be deleted and echoed by me.";
 		} else {
 			echoHandler = makeEmbedEchoHandler(member, event);
 			if(echoHandler == null) return;
-			reply = "your next message in this channel within 3 minutes will be deleted and echoed by me as the description of the embed.";
+			replyMsg = "your next message in this channel within 3 minutes will be deleted and echoed by me as the description of the embed.";
 		}
 
-		event.reply(member.getAsMention() + " - " + reply)
+		event.reply(member.getAsMention() + " - " + replyMsg)
 				.setAllowedMentions(List.of())
 				.queue(msg -> {
-					EchoEntry entry = new EchoEntry(member, event.getChannel(),
-							echoHandler,
-							() -> {
-								msg.deleteOriginal().queue();
-							});
-
-					ECHOS.put(member.getIdLong(), entry);
-					Utils.doLater(TimeUnit.MINUTES, 3, () -> {
-						if(ECHOS.remove(member.getIdLong(), entry)) {
-							entry.messageDeleter.run();
-						}
-					});
+					var task = scheduleEchoTask(member, event.getChannel(), echoHandler);
+					ECHOS.put(member.getIdLong(), Pair.of(msg, task));
 				});
 	}
 
-	private static BiConsumer<Member, Message> makeEmbedEchoHandler(Member member, SlashCommandInteraction event) {
+	private void endEcho(Member member) {
+		Pair<InteractionHook, Task<?>> pair = ECHOS.remove(member.getIdLong());
+		if(pair != null) {
+			pair.left().deleteOriginal().queue();
+			pair.right().cancel();
+		}
+	}
+
+	private Consumer<Message> makeEmbedEchoHandler(Member member, SlashCommandInteraction event) {
 		Function<String, String> args = name -> event.getOption(name, OptionMapping::getAsString);
 
 		EmbedBuilder builder = new EmbedBuilder();
@@ -122,20 +122,20 @@ public class EchoCommand implements CommandHandler {
 		}
 
 		builder.setFooter(footer, footerIconUrl);
-		return (_, og) -> {
-			builder.setDescription(og.getContentRaw());
+		return msg -> {
+			builder.setDescription(msg.getContentRaw());
 
-			og.getChannel()
+			msg.getChannel()
 					.sendMessageEmbeds(builder.build())
 					.setAllowedMentions(List.of())
 					.queue(ourMsg -> {
-						Utils.logMinor("%s used echo (embed) in %s > %s", member, og.getChannel(), ourMsg);
-						og.delete().reason("echo command").queue();
+						Utils.logMinor("%s used echo (embed) in %s > %s", member, msg.getChannel(), ourMsg);
+						msg.delete().reason("echo command").queue();
 					});
 		};
 	}
 
-	private static void handleEchoMessage(Member member, Message og) {
+	private void handleEchoMessage(Member member, Message og) {
 		List<Attachment> attachments = og.getAttachments();
 		List<FileUpload> uploads = new ArrayList<>(attachments.size());
 		for(Attachment attach : attachments) {
@@ -159,7 +159,16 @@ public class EchoCommand implements CommandHandler {
 				});
 	}
 
-	public record EchoEntry(Member member, MessageChannelUnion channel,
-	                        BiConsumer<Member, Message> echoHandler,
-	                        Runnable messageDeleter) {}
+
+	private Task<?> scheduleEchoTask(Member member, Channel channel,
+	                                 Consumer<Message> echoHandler) {
+		return Main.jda.listenOnce(MessageReceivedEvent.class)
+				.filter(msgEvent -> msgEvent.getAuthor().getIdLong() == member.getIdLong())
+				.filter(msgEvent -> msgEvent.getChannel().equals(channel))
+				.timeout(Duration.ofMinutes(3), () -> endEcho(member))
+				.subscribe(msgEvent -> {
+					echoHandler.accept(msgEvent.getMessage());
+					endEcho(member);
+				});
+	}
 }

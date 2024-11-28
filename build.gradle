@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    api("net.dv8tion:JDA:5.0.0-beta.24") {
+    api("net.dv8tion:JDA:5.2.1") {
         // exclude audio library
         exclude group: "club.minnced", module: "opus-java"
     }

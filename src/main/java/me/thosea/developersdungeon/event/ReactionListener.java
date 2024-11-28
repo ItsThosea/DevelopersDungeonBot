@@ -4,6 +4,7 @@ import me.thosea.developersdungeon.Main;
 import me.thosea.developersdungeon.command.VerifyCommand;
 import me.thosea.developersdungeon.util.Constants.Channels;
 import me.thosea.developersdungeon.util.Constants.Roles;
+import me.thosea.developersdungeon.util.UserMock;
 import me.thosea.developersdungeon.util.Utils;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -26,11 +27,6 @@ public class ReactionListener extends ListenerAdapter {
 		if(msg.getType() != MessageType.DEFAULT) return;
 
 		long id = event.getChannel().getIdLong();
-		if(EchoMessageListener.lastEchoChannel == id) {
-			EchoMessageListener.lastEchoChannel = -1;
-			return;
-		}
-
 		if(id == Channels.VERIFY) {
 			if(Utils.hasRole(author, Roles.VERIFIED)) return;
 			if(Utils.hasRole(author, Roles.STAFF)) return;
@@ -83,12 +79,15 @@ public class ReactionListener extends ListenerAdapter {
 							Utils.logMajor("%s denied verification for %s, kicking them", member, target);
 						}
 					}, _ -> {});
+		}, _ -> {
+			// member left
+			revertReaction(event);
 		});
 	}
 
 	private void revertReaction(MessageReactionAddEvent event) {
 		event.retrieveMessage().queue(msg -> {
-			msg.removeReaction(event.getEmoji(), event.getUser()).queue();
+			msg.removeReaction(event.getEmoji(), new UserMock(event.getUserIdLong())).queue();
 		}, _ -> {});
 	}
 }
