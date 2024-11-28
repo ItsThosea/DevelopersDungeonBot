@@ -38,11 +38,10 @@ public class SmpSuggestionCommand implements CommandHandler {
 
 		String type = event.getSubcommandName();
 		assert type != null;
-		event.replyModal(createModal(type, null, null, false)).queue();
+		event.replyModal(createModal(type, null, null)).queue();
 	}
 
-	public static Modal createModal(String type, String prevContent, String prevReason,
-	                                boolean irresistible) {
+	public static Modal createModal(String type, String prevContent, String prevReason) {
 		String contentPrompt;
 		String contentPlaceholder;
 		if(type.equals("mod")) {
@@ -66,7 +65,7 @@ public class SmpSuggestionCommand implements CommandHandler {
 				.build();
 
 		return Modal.create(
-				ModalResponseListener.MODAL_SMP_SUGGESTION + "-" + type + "-" + irresistible,
+				ModalResponseListener.MODAL_SMP_SUGGESTION + "-" + type,
 				"SMP suggestion (" + type + ")"
 		).addActionRow(content).addActionRow(reason).build();
 	}
@@ -86,8 +85,7 @@ public class SmpSuggestionCommand implements CommandHandler {
 
 	public static void handleModalResponse(Member member, String type,
 	                                       String content, String reason,
-	                                       InteractionHook hook,
-	                                       boolean irresistible) {
+	                                       InteractionHook hook) {
 		MessageEmbed embed = new EmbedBuilder()
 				.setAuthor(member.getUser().getName(), null, member.getUser().getAvatarUrl())
 				.setColor(member.getColorRaw())
@@ -99,13 +97,12 @@ public class SmpSuggestionCommand implements CommandHandler {
 				.addField("Reasoning", reason, false)
 				.build();
 
-		String idSuffix = type + "-" + irresistible;
-		hook.editOriginal(!irresistible ? "Confirm suggestion?" : "Confirm ~~irresistible~~ suggestion?")
+		hook.editOriginal("Confirm suggestion?")
 				.setEmbeds(embed)
 				.setActionRow(
-						Button.success(ID_SMP_SUGGEST_CONFIRM + "-accept-" + idSuffix, "Yes"),
-						Button.secondary(ID_SMP_SUGGEST_CONFIRM + "-retype-" + idSuffix, "Retype"),
-						Button.danger(ID_SMP_SUGGEST_CONFIRM + "-deny-" + idSuffix, "Nevermind"))
+						Button.success(ID_SMP_SUGGEST_CONFIRM + "-accept-" + type, "Yes"),
+						Button.secondary(ID_SMP_SUGGEST_CONFIRM + "-retype-" + type, "Retype"),
+						Button.danger(ID_SMP_SUGGEST_CONFIRM + "-deny-" + type, "Nevermind"))
 				.queue();
 	}
 }
