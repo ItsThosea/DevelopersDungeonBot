@@ -99,7 +99,7 @@ public final class Main {
 		jda.updateCommands().addCommands(CommandHandler.buildCommands()).queue();
 
 		if(!Files.isDirectory(DATA_DIR)) {
-			throw new IllegalStateException("No directory at " + DATA_DIR.toAbsolutePath());
+			oops("No directory at " + DATA_DIR.toAbsolutePath());
 		}
 		System.out.println("Data directory: " + DATA_DIR.toAbsolutePath());
 
