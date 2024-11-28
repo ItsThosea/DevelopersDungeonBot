@@ -20,9 +20,6 @@ import net.dv8tion.jda.internal.entities.MemberImpl;
 
 import java.awt.Color;
 import java.io.InputStream;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -35,7 +32,6 @@ public final class Utils {
 	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	public static final Emoji EMOJI_YES = Emoji.fromUnicode("U+2705");
 	public static final Emoji EMOJI_NO = Emoji.fromUnicode("U+274C");
-	public static final Emoji EMOJI_SMILE = Emoji.fromUnicode("U+1F603");
 
 	private Utils() {}
 
@@ -58,26 +54,6 @@ public final class Utils {
 	public static boolean isAdmin(Member member) {
 		long id = member.getIdLong();
 		return Constants.ADMINS.contains(id) || member.hasPermission(Permission.MANAGE_SERVER);
-	}
-
-	public static long getNextCurseforgePingTime() {
-		var date = ZonedDateTime.now();
-		var target = LocalDate.now()
-				.atTime(12, 0)
-				.atZone(ZoneOffset.UTC)
-				.plusMonths(1)
-				.withDayOfMonth(1)
-				.minusDays(2);
-
-		if(date.compareTo(target) >= 0) {
-			date = target.plusMonths(2)
-					.withDayOfMonth(1)
-					.minusDays(2);
-		} else {
-			date = target;
-		}
-
-		return date.toInstant().toEpochMilli();
 	}
 
 	public static void logMinor(String message, Object... args) {
