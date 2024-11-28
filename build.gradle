@@ -4,8 +4,14 @@ plugins {
 }
 
 group = "me.thosea"
-version = "1.4.9"
 description = "DevelopersDungeon"
+
+// A.B.C-D
+// A - major new feature
+// B - minor new feature
+// C - small changes
+// D - bug fixes
+version = "1.4.10-0"
 
 repositories {
     mavenCentral()
